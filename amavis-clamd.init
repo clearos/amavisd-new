@@ -1,0 +1,7 @@
+#!/bin/bash
+#
+# chkconfig: - 78 32
+# description: The clamd server running for amavisd
+
+CLAMD_SERVICE=amavisd
+. /usr/share/clamav/clamd-wrapper
