@@ -2,8 +2,8 @@
 
 Summary:        Email filter with virus scanner and spamassassin support
 Name:           amavisd-new
-Version:        2.3.3
-Release:        5%{?prerelease:.%{prerelease}}%{?dist}
+Version:        2.4.0
+Release:        1%{?prerelease:.%{prerelease}}%{?dist}
 License:        GPL
 Group:          Applications/System
 URL:            http://www.ijs.si/software/amavisd/
@@ -146,6 +146,9 @@ service clamd.amavisd condrestart
 %ghost /var/spool/amavisd/clamd.sock
 
 %changelog
+* Tue Apr 25 2006 Steven Pritchard <steve@kspei.com> 2.4.0-1
+- Update to 2.4.0
+
 * Thu Feb 02 2006 Steven Pritchard <steve@kspei.com> 2.3.3-5
 - Add dist to Release
 
