@@ -2,7 +2,7 @@
 
 Summary:        Email filter with virus scanner and spamassassin support
 Name:           amavisd-new
-Version:        2.4.0
+Version:        2.4.1
 Release:        1%{?prerelease:.%{prerelease}}%{?dist}
 License:        GPL
 Group:          Applications/System
@@ -27,7 +27,6 @@ Requires:       cpio
 Requires:       freeze
 Requires:       lzop
 Requires:       nomarch
-Requires:       zoo
 Requires:       cabextract
 Requires:       /usr/bin/ar
 # We probably should parse the fetch_modules() code in amavisd for this list.
@@ -146,6 +145,10 @@ service clamd.amavisd condrestart
 %ghost /var/spool/amavisd/clamd.sock
 
 %changelog
+* Tue Jun 20 2006 Steven Pritchard <steve@kspei.com> 2.4.1-1
+- Update to 2.4.1
+- Drop zoo dependency due to Extras maintainer security concerns
+
 * Tue Apr 25 2006 Steven Pritchard <steve@kspei.com> 2.4.0-1
 - Update to 2.4.0
 
