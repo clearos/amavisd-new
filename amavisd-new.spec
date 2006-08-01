@@ -2,7 +2,7 @@
 
 Summary:        Email filter with virus scanner and spamassassin support
 Name:           amavisd-new
-Version:        2.4.1
+Version:        2.4.2
 Release:        1%{?prerelease:.%{prerelease}}%{?dist}
 License:        GPL
 Group:          Applications/System
@@ -74,7 +74,7 @@ which could cause a mail loss.
 %patch1 -p1
 %patch2 -p0
 %patch3 -p0
-cp -a %{SOURCE4} README_FILES/
+install -m644 %{SOURCE4} README_FILES/
 
 %build
 
@@ -145,6 +145,10 @@ service clamd.amavisd condrestart
 %ghost /var/spool/amavisd/clamd.sock
 
 %changelog
+* Mon Jul 31 2006 Steven Pritchard <steve@kspei.com> 2.4.2-1
+- Update to 2.4.2
+- Fix permissions on README.fedora (bug #200769)
+
 * Tue Jun 20 2006 Steven Pritchard <steve@kspei.com> 2.4.1-1
 - Update to 2.4.1
 - Drop zoo dependency due to Extras maintainer security concerns

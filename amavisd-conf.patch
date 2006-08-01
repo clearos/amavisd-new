@@ -1,52 +1,52 @@
---- amavisd-new-2.3.2/amavisd.conf.orig	2005-06-29 05:26:05.000000000 -0500
-+++ amavisd-new-2.3.2/amavisd.conf	2005-07-06 12:22:21.000000000 -0500
+--- amavisd-new-2.4.2/amavisd.conf.orig	2006-06-27 06:31:50.000000000 -0500
++++ amavisd-new-2.4.2/amavisd.conf	2006-07-31 17:31:00.000000000 -0500
 @@ -14,23 +14,23 @@
  # @bypass_spam_checks_maps  = (1);  # uncomment to DISABLE anti-spam code
  
- $max_servers = 2;            # number of pre-forked children (2..15 is common)
--$daemon_user  = 'vscan';     # (no default;  customary: vscan or amavis)
--$daemon_group = 'vscan';     # (no default;  customary: vscan or amavis)
-+$daemon_user  = 'amavis';    # (no default;  customary: vscan or amavis)
-+$daemon_group = 'amavis';    # (no default;  customary: vscan or amavis)
+ $max_servers = 2;            # num of pre-forked children (2..15 is common), -m
+-$daemon_user  = 'vscan';     # (no default;  customary: vscan or amavis), -u
+-$daemon_group = 'vscan';     # (no default;  customary: vscan or amavis), -g
++$daemon_user  = 'amavis';    # (no default;  customary: vscan or amavis), -u
++$daemon_group = 'amavis';    # (no default;  customary: vscan or amavis), -g
  
  $mydomain = 'example.com';   # a convenient default for other settings
  
--$MYHOME   = '/var/amavis';   # a convenient default for other settings
-+$MYHOME   = '/var/spool/amavisd';   # a convenient default for other settings
- $TEMPBASE = "$MYHOME/tmp";   # working directory, needs to be created manually
+-# $MYHOME = '/var/amavis';   # a convenient default for other settings, -H
++$MYHOME = '/var/spool/amavisd';   # a convenient default for other settings, -H
+ $TEMPBASE = "$MYHOME/tmp";   # working directory, needs to exist, -T
  $ENV{TMPDIR} = $TEMPBASE;    # environment variable TMPDIR
--$QUARANTINEDIR = '/var/virusmails';
-+$QUARANTINEDIR = undef;
+-$QUARANTINEDIR = '/var/virusmails';  # -Q
++$QUARANTINEDIR = undef;      # -Q
  # $quarantine_subdir_levels = 1;  # add level of subdirs to disperse quarantine
  
- # $daemon_chroot_dir = $MYHOME;   # chroot directory or undef
+ # $daemon_chroot_dir = $MYHOME;   # chroot directory or undef, -R
  
- # $db_home   = "$MYHOME/db";
- # $helpers_home = "$MYHOME/var";  # prefer $MYHOME clean and owned by root?
--# $pid_file  = "$MYHOME/var/amavisd.pid";
--# $lock_file = "$MYHOME/var/amavisd.lock";
-+$pid_file  = "/var/run/amavisd/amavisd.pid";
-+$lock_file = "/var/run/amavisd/amavisd.lock";
+ # $db_home   = "$MYHOME/db";      # dir for bdb nanny/cache/snmp databases, -D
+ # $helpers_home = "$MYHOME/var";  # working directory for SpamAssassin, -S
+-# $lock_file = "$MYHOME/var/amavisd.lock";  # -L
+-# $pid_file  = "$MYHOME/var/amavisd.pid";   # -P
++$lock_file = "/var/run/amavisd/amavisd.lock";  # -L
++$pid_file  = "/var/run/amavisd/amavisd.pid";   # -P
  #NOTE: create directories $MYHOME/tmp, $MYHOME/var, $MYHOME/db manually
  
  @local_domains_maps = ( [".$mydomain"] );
-@@ -65,11 +65,11 @@
- #     ["DBI:SQLite:dbname=$MYHOME/sql/mail_prefs.sqlite", '', ''] );
- # @storage_sql_dsn = @lookup_sql_dsn;  # none, same, or separate database
+@@ -77,11 +77,11 @@
+ # $timestamp_fmt_mysql = 1; # if using MySQL *and* msgs.time_iso is TIMESTAMP;
+ #   defaults to 0, which is good for non-MySQL or if msgs.time_iso is CHAR(16)
  
 -$virus_admin               = "virusalert\@$mydomain";  # notifications recip.
-+$virus_admin               = undef;  # notifications recip.
++$virus_admin               = undef;                    # notifications recip.
  
 -$mailfrom_notify_admin     = "virusalert\@$mydomain";  # notifications sender
 -$mailfrom_notify_recip     = "virusalert\@$mydomain";  # notifications sender
 -$mailfrom_notify_spamadmin = "spam.police\@$mydomain"; # notifications sender
-+$mailfrom_notify_admin     = undef;  # notifications sender
-+$mailfrom_notify_recip     = undef;  # notifications sender
-+$mailfrom_notify_spamadmin = undef; # notifications sender
++$mailfrom_notify_admin     = undef;                    # notifications sender
++$mailfrom_notify_recip     = undef;                    # notifications sender
++$mailfrom_notify_spamadmin = undef;                    # notifications sender
  $mailfrom_to_quarantine = ''; # null return path; uses original sender if undef
  
  @addr_extension_virus_maps      = ('virus');
-@@ -99,10 +99,10 @@
+@@ -111,10 +111,10 @@
  # $notify_method  = 'smtp:[127.0.0.1]:10025';
  # $forward_method = 'smtp:[127.0.0.1]:10025';  # set to undef with milter!
  
@@ -59,9 +59,9 @@
 +$final_spam_destiny       = D_DISCARD;
 +$final_bad_header_destiny = D_BOUNCE;
  
+ # $os_fingerprint_method = 'p0f:127.0.0.1:2345';  # to query p0f-analyzer.pl
  
- # SOME OTHER VARIABLES WORTH CONSIDERING (see amavisd.conf-default for all)
-@@ -286,10 +286,10 @@
+@@ -306,10 +306,10 @@
  # ['Sophos SAVI', \&sophos_savi ],
  
  # ### http://www.clamav.net/
@@ -70,7 +70,7 @@
 -#   qr/\bOK$/, qr/\bFOUND$/,
 -#   qr/^.*?: (?!Infected Archive)(.*) FOUND$/ ],
 +['ClamAV-clamd',
-+  \&ask_daemon, ["CONTSCAN {}\n", "/var/spool/amavisd/clamd.sock"],
++  \&ask_daemon, ["CONTSCAN {}\n", "/var/run/clamav/clamd"],
 +  qr/\bOK$/, qr/\bFOUND$/,
 +  qr/^.*?: (?!Infected Archive)(.*) FOUND$/ ],
  # # NOTE: the easiest is to run clamd under the same user as amavisd; match the
