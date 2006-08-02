@@ -70,7 +70,7 @@
 -#   qr/\bOK$/, qr/\bFOUND$/,
 -#   qr/^.*?: (?!Infected Archive)(.*) FOUND$/ ],
 +['ClamAV-clamd',
-+  \&ask_daemon, ["CONTSCAN {}\n", "/var/run/clamav/clamd"],
++  \&ask_daemon, ["CONTSCAN {}\n", "/var/spool/amavisd/clamd.sock"],
 +  qr/\bOK$/, qr/\bFOUND$/,
 +  qr/^.*?: (?!Infected Archive)(.*) FOUND$/ ],
  # # NOTE: the easiest is to run clamd under the same user as amavisd; match the

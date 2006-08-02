@@ -3,7 +3,7 @@
 Summary:        Email filter with virus scanner and spamassassin support
 Name:           amavisd-new
 Version:        2.4.2
-Release:        1%{?prerelease:.%{prerelease}}%{?dist}
+Release:        2%{?prerelease:.%{prerelease}}%{?dist}
 License:        GPL
 Group:          Applications/System
 URL:            http://www.ijs.si/software/amavisd/
@@ -145,6 +145,9 @@ service clamd.amavisd condrestart
 %ghost /var/spool/amavisd/clamd.sock
 
 %changelog
+* Wed Aug 02 2006 Steven Pritchard <steve@kspei.com> 2.4.2-2
+- Fix path to clamd socket in amavisd-conf.patch.
+
 * Mon Jul 31 2006 Steven Pritchard <steve@kspei.com> 2.4.2-1
 - Update to 2.4.2
 - Fix permissions on README.fedora (bug #200769)
