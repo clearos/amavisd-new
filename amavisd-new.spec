@@ -3,7 +3,7 @@
 Summary:        Email filter with virus scanner and spamassassin support
 Name:           amavisd-new
 Version:        2.4.2
-Release:        3%{?prerelease:.%{prerelease}}%{?dist}
+Release:        4%{?prerelease:.%{prerelease}}%{?dist}
 License:        GPL
 Group:          Applications/System
 URL:            http://www.ijs.si/software/amavisd/
@@ -22,7 +22,7 @@ Requires:       /usr/sbin/clamd, /etc/clamd.d
 Requires:       tmpwatch
 Requires:       bzip2
 Requires:       gzip
-Requires:       lha
+Requires:       arj
 Requires:       cpio
 Requires:       freeze
 Requires:       lzop
@@ -145,6 +145,9 @@ service clamd.amavisd condrestart
 %ghost /var/spool/amavisd/clamd.sock
 
 %changelog
+* Thu Sep 28 2006 Steven Pritchard <steve@kspei.com> 2.4.2-4
+- Drop lha dependency and add arj.
+
 * Sun Sep 17 2006 Steven Pritchard <steve@kspei.com> 2.4.2-3
 - Rebuild.
 
