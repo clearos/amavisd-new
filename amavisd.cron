@@ -1,0 +1,2 @@
+/usr/sbin/tmpwatch 24 /var/spool/amavisd/tmp
+/usr/sbin/tmpwatch -d 720 /var/spool/amavisd/quarantine

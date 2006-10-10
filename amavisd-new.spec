@@ -2,8 +2,8 @@
 
 Summary:        Email filter with virus scanner and spamassassin support
 Name:           amavisd-new
-Version:        2.4.2
-Release:        4%{?prerelease:.%{prerelease}}%{?dist}
+Version:        2.4.3
+Release:        1%{?prerelease:.%{prerelease}}%{?dist}
 License:        GPL
 Group:          Applications/System
 URL:            http://www.ijs.si/software/amavisd/
@@ -12,6 +12,8 @@ Source1:        amavis-clamd.init
 Source2:        amavis-clamd.conf
 Source3:        amavis-clamd.sysconfig
 Source4:        README.fedora
+Source5:        README.quarantine
+Source6:        amavisd.cron
 Patch0:         amavisd-conf.patch
 Patch1:         amavisd-init.patch
 Patch2:         amavisd-condrestart.patch
@@ -19,7 +21,7 @@ Patch3:         amavisd-db.patch
 BuildRoot:      %{_tmppath}/%{name}-%{version}-root/
 Requires:       smtpdaemon
 Requires:       /usr/sbin/clamd, /etc/clamd.d
-Requires:       tmpwatch
+Requires:       /usr/sbin/tmpwatch, /etc/cron.daily
 Requires:       bzip2
 Requires:       gzip
 Requires:       arj
@@ -65,7 +67,7 @@ amavisd-new is a high-performance and reliable interface between mailer
 (MTA) and one or more content checkers: virus scanners, and/or
 Mail::SpamAssassin Perl module. It is written in Perl, assuring high
 reliability, portability and maintainability. It talks to MTA via (E)SMTP
-or LMTP, or by using helper programs. No timing gaps exist in the design,
+or LMTP, or by using helper programs. No timing gaps exist in the design
 which could cause a mail loss.
 
 %prep
@@ -74,7 +76,7 @@ which could cause a mail loss.
 %patch1 -p1
 %patch2 -p0
 %patch3 -p0
-install -m644 %{SOURCE4} README_FILES/
+install -m644 %{SOURCE4} %{SOURCE5} README_FILES/
 
 %build
 
@@ -101,7 +103,10 @@ install -m644 %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/clamd.d/amavisd.conf
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig
 install -m644 %{SOURCE3} $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/clamd.amavisd
 
-mkdir -p $RPM_BUILD_ROOT/var/spool/amavisd/{tmp,db}
+mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/cron.daily
+install -m644 %{SOURCE6} $RPM_BUILD_ROOT%{_sysconfdir}/cron.daily/amavisd
+
+mkdir -p $RPM_BUILD_ROOT/var/spool/amavisd/{tmp,db,quarantine}
 touch $RPM_BUILD_ROOT/var/spool/amavisd/clamd.sock
 mkdir -p $RPM_BUILD_ROOT/var/run/amavisd/
 
@@ -135,16 +140,23 @@ service clamd.amavisd condrestart
 %config(noreplace) %{_sysconfdir}/amavisd/amavisd.conf
 %config(noreplace) %{_sysconfdir}/clamd.d/amavisd.conf
 %config(noreplace) %{_sysconfdir}/sysconfig/clamd.amavisd
+%config(noreplace) %{_sysconfdir}/cron.daily/amavisd
 %{_sbindir}/amavisd
 %{_sbindir}/clamd.amavisd
 %{_bindir}/amavisd-*
 %dir %attr(700,amavis,amavis) /var/spool/amavisd
 %dir %attr(700,amavis,amavis) /var/spool/amavisd/tmp
 %dir %attr(700,amavis,amavis) /var/spool/amavisd/db
+%dir %attr(700,amavis,amavis) /var/spool/amavisd/quarantine
 %dir %attr(755,amavis,amavis) /var/run/amavisd
 %ghost /var/spool/amavisd/clamd.sock
 
 %changelog
+* Tue Oct 10 2006 Steven Pritchard <steve@kspei.com> 2.4.3-1
+- Update to 2.4.3.
+- Add quarantine directory and instructions for enabling it.
+- Add tmpwatch cron script.
+
 * Thu Sep 28 2006 Steven Pritchard <steve@kspei.com> 2.4.2-4
 - Drop lha dependency and add arj.
 
