@@ -3,7 +3,7 @@
 Summary:        Email filter with virus scanner and spamassassin support
 Name:           amavisd-new
 Version:        2.4.3
-Release:        1%{?prerelease:.%{prerelease}}%{?dist}
+Release:        2%{?prerelease:.%{prerelease}}%{?dist}
 License:        GPL
 Group:          Applications/System
 URL:            http://www.ijs.si/software/amavisd/
@@ -104,7 +104,7 @@ mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig
 install -m644 %{SOURCE3} $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/clamd.amavisd
 
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/cron.daily
-install -m644 %{SOURCE6} $RPM_BUILD_ROOT%{_sysconfdir}/cron.daily/amavisd
+install -m755 %{SOURCE6} $RPM_BUILD_ROOT%{_sysconfdir}/cron.daily/amavisd
 
 mkdir -p $RPM_BUILD_ROOT/var/spool/amavisd/{tmp,db,quarantine}
 touch $RPM_BUILD_ROOT/var/spool/amavisd/clamd.sock
@@ -152,6 +152,9 @@ service clamd.amavisd condrestart
 %ghost /var/spool/amavisd/clamd.sock
 
 %changelog
+* Sat Oct 14 2006 Steven Pritchard <steve@kspei.com> 2.4.3-2
+- Fix permissions on the cron.daily script.
+
 * Tue Oct 10 2006 Steven Pritchard <steve@kspei.com> 2.4.3-1
 - Update to 2.4.3.
 - Add quarantine directory and instructions for enabling it.
