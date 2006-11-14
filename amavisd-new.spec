@@ -3,7 +3,7 @@
 Summary:        Email filter with virus scanner and spamassassin support
 Name:           amavisd-new
 Version:        2.4.3
-Release:        2%{?prerelease:.%{prerelease}}%{?dist}
+Release:        3%{?prerelease:.%{prerelease}}%{?dist}
 License:        GPL
 Group:          Applications/System
 URL:            http://www.ijs.si/software/amavisd/
@@ -22,6 +22,7 @@ BuildRoot:      %{_tmppath}/%{name}-%{version}-root/
 Requires:       smtpdaemon
 Requires:       /usr/sbin/clamd, /etc/clamd.d
 Requires:       /usr/sbin/tmpwatch, /etc/cron.daily
+Requires:       file
 Requires:       bzip2
 Requires:       gzip
 Requires:       arj
@@ -152,6 +153,9 @@ service clamd.amavisd condrestart
 %ghost /var/spool/amavisd/clamd.sock
 
 %changelog
+* Tue Nov 14 2006 Steven Pritchard <steve@kspei.com> 2.4.3-3
+- Add dependency on file. (#215492)
+
 * Sat Oct 14 2006 Steven Pritchard <steve@kspei.com> 2.4.3-2
 - Fix permissions on the cron.daily script.
 
