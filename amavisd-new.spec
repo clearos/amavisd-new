@@ -3,7 +3,7 @@
 Summary:        Email filter with virus scanner and spamassassin support
 Name:           amavisd-new
 Version:        2.4.3
-Release:        4%{?prerelease:.%{prerelease}}%{?dist}
+Release:        5%{?prerelease:.%{prerelease}}%{?dist}
 License:        GPL
 Group:          Applications/System
 URL:            http://www.ijs.si/software/amavisd/
@@ -89,7 +89,7 @@ install -m755 amavisd $RPM_BUILD_ROOT%{_sbindir}/
 ( cd $RPM_BUILD_ROOT%{_sbindir} && ln -s clamd clamd.amavisd )
 
 mkdir -p $RPM_BUILD_ROOT%{_bindir}
-install -m755 amavisd-{agent,nanny} $RPM_BUILD_ROOT%{_bindir}/
+install -m755 amavisd-{agent,nanny,release} $RPM_BUILD_ROOT%{_bindir}/
 
 mkdir -p $RPM_BUILD_ROOT%{_initrddir}
 install -m755 amavisd_init.sh $RPM_BUILD_ROOT%{_initrddir}/amavisd
@@ -153,6 +153,9 @@ service clamd.amavisd condrestart
 %ghost /var/spool/amavisd/clamd.sock
 
 %changelog
+* Fri Dec 01 2006 Steven Pritchard <steve@kspei.com> 2.4.3-5
+- Add missing amavisd-release script.
+
 * Tue Nov 14 2006 Steven Pritchard <steve@kspei.com> 2.4.3-4
 - Rebuild.
 
