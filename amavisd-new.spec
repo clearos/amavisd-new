@@ -1,9 +1,9 @@
-#%%define prerelease rc1
+%define prerelease rc2
 
 Summary:        Email filter with virus scanner and spamassassin support
 Name:           amavisd-new
-Version:        2.4.5
-Release:        1%{?prerelease:.%{prerelease}}%{?dist}
+Version:        2.5.2
+Release:        0.1%{?prerelease:.%{prerelease}}%{?dist}
 License:        GPL
 Group:          Applications/System
 URL:            http://www.ijs.si/software/amavisd/
@@ -22,15 +22,17 @@ BuildRoot:      %{_tmppath}/%{name}-%{version}-root/
 Requires:       smtpdaemon
 Requires:       /usr/sbin/clamd, /etc/clamd.d
 Requires:       /usr/sbin/tmpwatch, /etc/cron.daily
-Requires:       file
-Requires:       bzip2
-Requires:       gzip
 Requires:       arj
+Requires:       bzip2
+Requires:       cabextract
 Requires:       cpio
+Requires:       file
 Requires:       freeze
+Requires:       gzip
 Requires:       lzop
 Requires:       nomarch
-Requires:       cabextract
+Requires:       p7zip
+Requires:       tar
 Requires:       /usr/bin/ar
 # We probably should parse the fetch_modules() code in amavisd for this list.
 # These are just the dependencies that don't get picked up otherwise.
@@ -61,6 +63,9 @@ Requires:       perl(Razor2::Client::Version)
 Requires:       perl(Authen::SASL)
 Requires:       perl(Mail::SPF::Query)
 Requires:       perl(Compress::Zlib) >= 1.35
+Requires(pre):  /sbin/chkconfig
+Requires(pre):  /sbin/service
+Requires:       /usr/sbin/useradd
 BuildArch:      noarch
 
 %description
@@ -119,20 +124,22 @@ rm -rf "$RPM_BUILD_ROOT"
 
 %pre
 if ! id amavis > /dev/null 2>&1 ; then
-    useradd -r -s /sbin/nologin -d /var/spool/amavisd amavis
+    /usr/sbin/useradd -r -s /sbin/nologin -d /var/spool/amavisd amavis
 fi
 
 %preun
 if [ "$1" = 0 ]; then
-    chkconfig --del amavisd
-    chkconfig --del clamd.amavisd
+    /sbin/service amavisd stop 2>/dev/null || :
+    /sbin/chkconfig --del amavisd
+    /sbin/service clamd.amavisd stop 2>/dev/null || :
+    /sbin/chkconfig --del clamd.amavisd
 fi
 
 %post
-chkconfig --add amavisd
-service amavisd condrestart
-chkconfig --add clamd.amavisd
-service clamd.amavisd condrestart
+/sbin/chkconfig --add amavisd
+/sbin/service amavisd condrestart
+/sbin/chkconfig --add clamd.amavisd
+/sbin/service clamd.amavisd condrestart
 
 %files
 %defattr(-,root,root)
@@ -156,6 +163,16 @@ service clamd.amavisd condrestart
 %ghost /var/spool/amavisd/clamd.sock
 
 %changelog
+* Fri Jun 22 2007 Steven Pritchard <steve@kspei.com> 2.5.2-0.1.rc2
+- Update to 2.5.2-rc2.
+
+* Fri Jun 22 2007 Steven Pritchard <steve@kspei.com> 2.5.1-1
+- Update to 2.5.1.
+- Fix amavis-clamd.conf (bug #237252).
+- Update amavisd-conf.patch.
+- Require p7zip and tar.
+- Improve pre/preun/post scripts.
+
 * Thu Feb 22 2007 Steven Pritchard <steve@kspei.com> 2.4.5-1
 - Update to 2.4.5.
 
