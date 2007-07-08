@@ -1,9 +1,9 @@
-%define prerelease rc2
+#%%define prerelease rc2
 
 Summary:        Email filter with virus scanner and spamassassin support
 Name:           amavisd-new
 Version:        2.5.2
-Release:        0.1%{?prerelease:.%{prerelease}}%{?dist}
+Release:        1%{?prerelease:.%{prerelease}}%{?dist}
 License:        GPL
 Group:          Applications/System
 URL:            http://www.ijs.si/software/amavisd/
@@ -163,6 +163,9 @@ fi
 %ghost /var/spool/amavisd/clamd.sock
 
 %changelog
+* Sun Jul 08 2007 Steven Pritchard <steve@kspei.com> 2.5.2-1
+- Update to 2.5.2.
+
 * Fri Jun 22 2007 Steven Pritchard <steve@kspei.com> 2.5.2-0.1.rc2
 - Update to 2.5.2-rc2.
 
