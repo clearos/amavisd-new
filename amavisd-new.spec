@@ -3,7 +3,7 @@
 Summary:        Email filter with virus scanner and spamassassin support
 Name:           amavisd-new
 Version:        2.5.2
-Release:        1%{?prerelease:.%{prerelease}}%{?dist}
+Release:        2%{?prerelease:.%{prerelease}}%{?dist}
 License:        GPL
 Group:          Applications/System
 URL:            http://www.ijs.si/software/amavisd/
@@ -22,6 +22,8 @@ BuildRoot:      %{_tmppath}/%{name}-%{version}-root/
 Requires:       smtpdaemon
 Requires:       /usr/sbin/clamd, /etc/clamd.d
 Requires:       /usr/sbin/tmpwatch, /etc/cron.daily
+Requires:       /usr/bin/ar
+Requires:       altermime
 Requires:       arj
 Requires:       bzip2
 Requires:       cabextract
@@ -33,9 +35,17 @@ Requires:       lzop
 Requires:       nomarch
 Requires:       p7zip
 Requires:       tar
-Requires:       /usr/bin/ar
 # We probably should parse the fetch_modules() code in amavisd for this list.
 # These are just the dependencies that don't get picked up otherwise.
+Requires:       perl(Archive::Tar)
+Requires:       perl(Archive::Zip)
+Requires:       perl(Authen::SASL)
+Requires:       perl(Compress::Zlib) >= 1.35
+Requires:       perl(Convert::TNEF)
+Requires:       perl(Convert::UUlib)
+Requires:       perl(DBD::SQLite)
+Requires:       perl(DBI)
+Requires:       perl(IO::Socket::INET6)
 Requires:       perl(IO::Stringy)
 Requires:       perl(MIME::Body)
 Requires:       perl(MIME::Decoder::Base64)
@@ -48,24 +58,17 @@ Requires:       perl(MIME::Head)
 Requires:       perl(Mail::Field)
 Requires:       perl(Mail::Header)
 Requires:       perl(Mail::Internet)
+Requires:       perl(Mail::SPF)
 Requires:       perl(Mail::SpamAssassin)
-Requires:       perl(Archive::Tar)
-Requires:       perl(Archive::Zip)
-Requires:       perl(Convert::TNEF)
-Requires:       perl(Convert::UUlib)
-Requires:       perl(URI)
 Requires:       perl(Net::DNS)
 Requires:       perl(Net::LDAP)
-Requires:       perl(DBI)
-Requires:       perl(DBD::mysql)
-Requires:       perl(DBD::SQLite)
 Requires:       perl(Razor2::Client::Version)
-Requires:       perl(Authen::SASL)
-Requires:       perl(Mail::SPF::Query)
-Requires:       perl(Compress::Zlib) >= 1.35
-Requires(pre):  /sbin/chkconfig
-Requires(pre):  /sbin/service
-Requires:       /usr/sbin/useradd
+Requires:       perl(URI)
+Requires(pre):  /usr/sbin/useradd
+Requires(post): /sbin/chkconfig
+Requires(post): /sbin/service
+Requires(preun): /sbin/chkconfig
+Requires(preun): /sbin/service
 BuildArch:      noarch
 
 %description
@@ -123,23 +126,23 @@ mkdir -p $RPM_BUILD_ROOT/var/run/amavisd/
 rm -rf "$RPM_BUILD_ROOT"
 
 %pre
-if ! id amavis > /dev/null 2>&1 ; then
+if ! id amavis &>/dev/null ; then
     /usr/sbin/useradd -r -s /sbin/nologin -d /var/spool/amavisd amavis
 fi
 
 %preun
 if [ "$1" = 0 ]; then
     /sbin/service amavisd stop 2>/dev/null || :
-    /sbin/chkconfig --del amavisd
+    /sbin/chkconfig --del amavisd || :
     /sbin/service clamd.amavisd stop 2>/dev/null || :
-    /sbin/chkconfig --del clamd.amavisd
+    /sbin/chkconfig --del clamd.amavisd || :
 fi
 
 %post
-/sbin/chkconfig --add amavisd
-/sbin/service amavisd condrestart
-/sbin/chkconfig --add clamd.amavisd
-/sbin/service clamd.amavisd condrestart
+/sbin/chkconfig --add clamd.amavisd || :
+/sbin/service clamd.amavisd condrestart || :
+/sbin/chkconfig --add amavisd || :
+/sbin/service amavisd condrestart || :
 
 %files
 %defattr(-,root,root)
@@ -163,6 +166,11 @@ fi
 %ghost /var/spool/amavisd/clamd.sock
 
 %changelog
+* Sun Aug 12 2007 Steven Pritchard <steve@kspei.com> 2.5.2-2
+- Fix pre/preun/post dependencies and improve scriptlets a bit.
+- Drop dependencies on DBD::mysql and Mail::SPF::Query.
+- Add dependencies on IO::Socket::INET6, Mail::SPF, and altermime.
+
 * Sun Jul 08 2007 Steven Pritchard <steve@kspei.com> 2.5.2-1
 - Update to 2.5.2.
 
