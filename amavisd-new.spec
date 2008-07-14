@@ -3,8 +3,9 @@
 Summary:        Email filter with virus scanner and spamassassin support
 Name:           amavisd-new
 Version:        2.5.2
-Release:        2%{?prerelease:.%{prerelease}}%{?dist}
-License:        GPL
+Release:        3%{?prerelease:.%{prerelease}}%{?dist}
+# LDAP schema is GFDL, some helpers are BSD, core is GPLv2+
+License:        GPLv2+ and BSD and GFDL
 Group:          Applications/System
 URL:            http://www.ijs.si/software/amavisd/
 Source0:        http://www.ijs.si/software/amavisd/amavisd-new-%{version}%{?prerelease:-%{prerelease}}.tar.gz
@@ -166,6 +167,10 @@ fi
 %ghost /var/spool/amavisd/clamd.sock
 
 %changelog
+* Mon Jul 14 2008 Tom "spot" Callaway <tcallawa@redhat.com> 2.5.2-3
+- fix license tag
+- fix db patch to apply with fuzz=0
+
 * Sun Aug 12 2007 Steven Pritchard <steve@kspei.com> 2.5.2-2
 - Fix pre/preun/post dependencies and improve scriptlets a bit.
 - Drop dependencies on DBD::mysql and Mail::SPF::Query.
