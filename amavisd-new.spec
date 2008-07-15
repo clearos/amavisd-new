@@ -2,8 +2,8 @@
 
 Summary:        Email filter with virus scanner and spamassassin support
 Name:           amavisd-new
-Version:        2.5.2
-Release:        3%{?prerelease:.%{prerelease}}%{?dist}
+Version:        2.6.1
+Release:        1%{?prerelease:.%{prerelease}}%{?dist}
 # LDAP schema is GFDL, some helpers are BSD, core is GPLv2+
 License:        GPLv2+ and BSD and GFDL
 Group:          Applications/System
@@ -44,9 +44,13 @@ Requires:       perl(Authen::SASL)
 Requires:       perl(Compress::Zlib) >= 1.35
 Requires:       perl(Convert::TNEF)
 Requires:       perl(Convert::UUlib)
+Requires:       perl(Crypt::OpenSSL::RSA)
 Requires:       perl(DBD::SQLite)
 Requires:       perl(DBI)
+Requires:       perl(Digest::SHA)
+Requires:       perl(Digest::SHA1)
 Requires:       perl(IO::Socket::INET6)
+Requires:       perl(IO::Socket::SSL)
 Requires:       perl(IO::Stringy)
 Requires:       perl(MIME::Body)
 Requires:       perl(MIME::Decoder::Base64)
@@ -56,6 +60,7 @@ Requires:       perl(MIME::Decoder::NBit)
 Requires:       perl(MIME::Decoder::QuotedPrint)
 Requires:       perl(MIME::Decoder::UU)
 Requires:       perl(MIME::Head)
+Requires:       perl(Mail::DKIM)
 Requires:       perl(Mail::Field)
 Requires:       perl(Mail::Header)
 Requires:       perl(Mail::Internet)
@@ -63,7 +68,10 @@ Requires:       perl(Mail::SPF)
 Requires:       perl(Mail::SpamAssassin)
 Requires:       perl(Net::DNS)
 Requires:       perl(Net::LDAP)
+Requires:       perl(Net::SSLeay)
+Requires:       perl(NetAddr::IP)
 Requires:       perl(Razor2::Client::Version)
+Requires:       perl(Socket6)
 Requires:       perl(URI)
 Requires(pre):  /usr/sbin/useradd
 Requires(post): /sbin/chkconfig
@@ -167,6 +175,11 @@ fi
 %ghost /var/spool/amavisd/clamd.sock
 
 %changelog
+* Wed Jul 15 2008 Steven Pritchard <steve@kspei.com> 2.6.1-1
+- Update to 2.6.1.
+- Require Crypt::OpenSSL::RSA, Digest::SHA, Digest::SHA1, IO::Socket::SSL,
+  Mail::DKIM, Net::SSLeay, NetAddr::IP, and Socket6.
+
 * Mon Jul 14 2008 Tom "spot" Callaway <tcallawa@redhat.com> 2.5.2-3
 - fix license tag
 - fix db patch to apply with fuzz=0
