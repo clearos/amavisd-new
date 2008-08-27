@@ -1,7 +1,7 @@
 INSTALLATION
 ------------
-Installing amavisd-new from Fedora Extras is simple.  First, install
-the amavisd-new package:
+Installing amavisd-new from Fedora is simple.  First, install the
+amavisd-new package:
 
   yum -y install amavisd-new
 
