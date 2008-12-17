@@ -2,7 +2,7 @@
 
 Summary:        Email filter with virus scanner and spamassassin support
 Name:           amavisd-new
-Version:        2.6.1
+Version:        2.6.2
 Release:        1%{?prerelease:.%{prerelease}}%{?dist}
 # LDAP schema is GFDL, some helpers are BSD, core is GPLv2+
 License:        GPLv2+ and BSD and GFDL
@@ -20,7 +20,6 @@ Patch1:         amavisd-init.patch
 Patch2:         amavisd-condrestart.patch
 Patch3:         amavisd-db.patch
 BuildRoot:      %{_tmppath}/%{name}-%{version}-root/
-Requires:       smtpdaemon
 Requires:       /usr/sbin/clamd, /etc/clamd.d
 Requires:       /usr/sbin/tmpwatch, /etc/cron.daily
 Requires:       /usr/bin/ar
@@ -175,6 +174,10 @@ fi
 %ghost /var/spool/amavisd/clamd.sock
 
 %changelog
+* Wed Dec 17 2008 Steven Pritchard <steve@kspei.com> 2.6.2-1
+- Update to 2.6.2.
+- Drop smtpdaemon dependency (BZ# 438078).
+
 * Wed Jul 15 2008 Steven Pritchard <steve@kspei.com> 2.6.1-1
 - Update to 2.6.1.
 - Require Crypt::OpenSSL::RSA, Digest::SHA, Digest::SHA1, IO::Socket::SSL,
