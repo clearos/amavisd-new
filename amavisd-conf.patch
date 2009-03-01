@@ -1,9 +1,9 @@
---- amavisd-new-2.5.1/amavisd.conf.orig	2007-05-31 07:09:55.000000000 -0500
-+++ amavisd-new-2.5.1/amavisd.conf	2007-06-22 16:35:04.000000000 -0500
-@@ -15,23 +15,23 @@
+--- amavisd-new-2.6.2/amavisd.conf	2008-12-15 01:50:03.000000000 +0100
++++ amavisd-new-2.6.2/amavisd.conf.conf	2009-03-01 19:11:48.000000000 +0100
+@@ -15,15 +15,15 @@
  # $bypass_decode_parts = 1;         # controls running of decoders&dearchivers
  
- $max_servers = 2;            # num of pre-forked children (2..15 is common), -m
+ $max_servers = 2;            # num of pre-forked children (2..30 is common), -m
 -$daemon_user  = 'vscan';     # (no default;  customary: vscan or amavis), -u
 -$daemon_group = 'vscan';     # (no default;  customary: vscan or amavis), -g
 +$daemon_user  = 'amavis';     # (no default;  customary: vscan or amavis), -u
@@ -18,8 +18,9 @@
 -$QUARANTINEDIR = '/var/virusmails';  # -Q
 +$QUARANTINEDIR = undef;      # -Q
  # $quarantine_subdir_levels = 1;  # add level of subdirs to disperse quarantine
- 
- # $daemon_chroot_dir = $MYHOME;   # chroot directory or undef, -R
+ # $release_format = 'resend';     # 'attach', 'plain', 'resend'
+ # $report_format  = 'arf';        # 'attach', 'plain', 'resend', 'arf'
+@@ -32,8 +32,8 @@
  
  # $db_home   = "$MYHOME/db";      # dir for bdb nanny/cache/snmp databases, -D
  # $helpers_home = "$MYHOME/var";  # working directory for SpamAssassin, -S
@@ -30,7 +31,7 @@
  #NOTE: create directories $MYHOME/tmp, $MYHOME/var, $MYHOME/db manually
  
  $log_level = 0;              # verbosity 0..5, -d
-@@ -110,11 +110,11 @@
+@@ -116,11 +116,11 @@
  # $timestamp_fmt_mysql = 1; # if using MySQL *and* msgs.time_iso is TIMESTAMP;
  #   defaults to 0, which is good for non-MySQL or if msgs.time_iso is CHAR(16)
  
@@ -46,7 +47,7 @@
  $mailfrom_to_quarantine = ''; # null return path; uses original sender if undef
  
  @addr_extension_virus_maps      = ('virus');
-@@ -148,10 +148,10 @@
+@@ -154,10 +154,10 @@
  # $notify_method  = 'smtp:[127.0.0.1]:10025';
  # $forward_method = 'smtp:[127.0.0.1]:10025';  # set to undef with milter!
  
@@ -58,21 +59,21 @@
 +$final_banned_destiny     = D_BOUNCE;
 +$final_spam_destiny       = D_DISCARD;
 +$final_bad_header_destiny = D_BOUNCE;
+ # $bad_header_quarantine_method = undef;
  
- # $os_fingerprint_method = 'p0f:127.0.0.1:2345';  # to query p0f-analyzer.pl
- 
-@@ -353,10 +353,10 @@
+ # $os_fingerprint_method = 'p0f:*:2345';  # to query p0f-analyzer.pl
+@@ -360,10 +360,10 @@
  # ['Sophos SAVI', \&sophos_savi ],
  
  # ### http://www.clamav.net/
 -# ['ClamAV-clamd',
 -#   \&ask_daemon, ["CONTSCAN {}\n", "/var/run/clamav/clamd"],
 -#   qr/\bOK$/, qr/\bFOUND$/,
--#   qr/^.*?: (?!Infected Archive)(.*) FOUND$/ ],
+-#   qr/^.*?: (?!Infected Archive)(.*) FOUND$/m ],
 +['ClamAV-clamd',
 +  \&ask_daemon, ["CONTSCAN {}\n", "/var/spool/amavisd/clamd.sock"],
 +  qr/\bOK$/, qr/\bFOUND$/,
-+  qr/^.*?: (?!Infected Archive)(.*) FOUND$/ ],
++  qr/^.*?: (?!Infected Archive)(.*) FOUND$/m ],
  # # NOTE: run clamd under the same user as amavisd, or run it under its own
  # #   uid such as clamav, add user clamav to the amavis group, and then add
  # #   AllowSupplementaryGroups to clamd.conf;
