@@ -1,6 +1,6 @@
 --- amavisd-new-2.6.2/amavisd.conf	2008-12-15 01:50:03.000000000 +0100
 +++ amavisd-new-2.6.2/amavisd.conf.conf	2009-03-01 19:11:48.000000000 +0100
-@@ -15,15 +15,15 @@
+@@ -15,25 +15,25 @@
  # $bypass_decode_parts = 1;         # controls running of decoders&dearchivers
  
  $max_servers = 2;            # num of pre-forked children (2..30 is common), -m
@@ -20,9 +20,11 @@
  # $quarantine_subdir_levels = 1;  # add level of subdirs to disperse quarantine
  # $release_format = 'resend';     # 'attach', 'plain', 'resend'
  # $report_format  = 'arf';        # 'attach', 'plain', 'resend', 'arf'
-@@ -32,8 +32,8 @@
  
- # $db_home   = "$MYHOME/db";      # dir for bdb nanny/cache/snmp databases, -D
+ # $daemon_chroot_dir = $MYHOME;   # chroot directory or undef, -R
+ 
+-# $db_home   = "$MYHOME/db";      # dir for bdb nanny/cache/snmp databases, -D
++$db_home   = "$MYHOME/db";        # dir for bdb nanny/cache/snmp databases, -D
  # $helpers_home = "$MYHOME/var";  # working directory for SpamAssassin, -S
 -# $lock_file = "$MYHOME/var/amavisd.lock";  # -L
 -# $pid_file  = "$MYHOME/var/amavisd.pid";   # -P

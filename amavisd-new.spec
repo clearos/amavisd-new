@@ -18,7 +18,6 @@ Source6:        amavisd.cron
 Patch0:         amavisd-conf.patch
 Patch1:         amavisd-init.patch
 Patch2:         amavisd-condrestart.patch
-Patch3:         amavisd-db.patch
 BuildRoot:      %{_tmppath}/%{name}-%{version}-root/
 Requires:       /usr/sbin/clamd, /etc/clamd.d
 Requires:       /usr/sbin/tmpwatch, /etc/cron.daily
@@ -92,7 +91,6 @@ which could cause a mail loss.
 %patch0 -p1
 %patch1 -p1
 %patch2 -p0
-%patch3 -p0
 install -m644 %{SOURCE4} %{SOURCE5} README_FILES/
 
 sed -i -e 's,/var/amavis/amavisd.sock\>,/var/spool/amavisd/amavisd.sock,' \
