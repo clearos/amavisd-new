@@ -2,8 +2,8 @@
 
 Summary:        Email filter with virus scanner and spamassassin support
 Name:           amavisd-new
-Version:        2.6.2
-Release:        4%{?prerelease:.%{prerelease}}%{?dist}
+Version:        2.6.4
+Release:        1%{?prerelease:.%{prerelease}}%{?dist}
 # LDAP schema is GFDL, some helpers are BSD, core is GPLv2+
 License:        GPLv2+ and BSD and GFDL
 Group:          Applications/System
@@ -15,6 +15,7 @@ Source3:        amavis-clamd.sysconfig
 Source4:        README.fedora
 Source5:        README.quarantine
 Source6:        amavisd.cron
+Source7:        amavisd-snmp.init
 Patch0:         amavisd-conf.patch
 Patch1:         amavisd-init.patch
 Patch2:         amavisd-condrestart.patch
@@ -78,6 +79,15 @@ Requires(preun): /sbin/chkconfig
 Requires(preun): /sbin/service
 BuildArch:      noarch
 
+%package snmp
+Group:          Applications/System
+Summary:        Exports amavisd SNMP data
+Requires:       %{name} = %{version}-%{release}
+Requires(post): /sbin/chkconfig
+Requires(post): /sbin/service
+Requires(preun): /sbin/chkconfig
+Requires(preun): /sbin/service
+
 %description
 amavisd-new is a high-performance and reliable interface between mailer
 (MTA) and one or more content checkers: virus scanners, and/or
@@ -85,6 +95,18 @@ Mail::SpamAssassin Perl module. It is written in Perl, assuring high
 reliability, portability and maintainability. It talks to MTA via (E)SMTP
 or LMTP, or by using helper programs. No timing gaps exist in the design
 which could cause a mail loss.
+
+%description snmp
+This package contains the program amavisd-snmp-subagent, which can be
+used as a SNMP AgentX, exporting amavisd statistical counters database
+(snmp.db) as well as a child process status database (nanny.db) to a
+SNMP daemon supporting the AgentX protocol (RFC 2741), such as NET-SNMP.
+
+It is similar to combined existing utility programs amavisd-agent and
+amavisd-nanny, but instead of writing results as text to stdout, it
+exports data to a SNMP server running on a host (same or remote), making
+them available to SNMP clients (such a Cacti or mrtg) for monitoring or
+alerting purposes.
 
 %prep
 %setup -q -n %{name}-%{version}%{?prerelease:-%{prerelease}}
@@ -102,7 +124,7 @@ sed -i -e 's,/var/amavis/amavisd.sock\>,/var/spool/amavisd/amavisd.sock,' \
 rm -rf "$RPM_BUILD_ROOT"
 
 mkdir -p $RPM_BUILD_ROOT%{_sbindir}
-install -m755 amavisd $RPM_BUILD_ROOT%{_sbindir}/
+install -m755 amavisd{,-snmp-subagent} $RPM_BUILD_ROOT%{_sbindir}/
 ( cd $RPM_BUILD_ROOT%{_sbindir} && ln -s clamd clamd.amavisd )
 
 mkdir -p $RPM_BUILD_ROOT%{_bindir}
@@ -111,6 +133,7 @@ install -m755 amavisd-{agent,nanny,release} $RPM_BUILD_ROOT%{_bindir}/
 mkdir -p $RPM_BUILD_ROOT%{_initrddir}
 install -m755 amavisd_init.sh $RPM_BUILD_ROOT%{_initrddir}/amavisd
 install -m755 %{SOURCE1} $RPM_BUILD_ROOT%{_initrddir}/clamd.amavisd
+install -m755 %{SOURCE7} $RPM_BUILD_ROOT%{_initrddir}/amavisd-snmp
 
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/amavisd
 install -m644 amavisd.conf $RPM_BUILD_ROOT%{_sysconfdir}/amavisd/
@@ -144,11 +167,21 @@ if [ "$1" = 0 ]; then
     /sbin/chkconfig --del clamd.amavisd || :
 fi
 
+%preun snmp
+if [ "$1" = 0 ]; then
+    /sbin/service amavisd-snmp stop 2>/dev/null || :
+    /sbin/chkconfig --del amavisd-snmp || :
+fi
+
 %post
 /sbin/chkconfig --add clamd.amavisd || :
 /sbin/service clamd.amavisd condrestart || :
 /sbin/chkconfig --add amavisd || :
 /sbin/service amavisd condrestart || :
+
+%post snmp
+/sbin/chkconfig --add amavisd-snmp || :
+/sbin/service amavisd-snmp condrestart || :
 
 %files
 %defattr(-,root,root)
@@ -171,7 +204,16 @@ fi
 %dir %attr(755,amavis,amavis) /var/run/amavisd
 %ghost /var/spool/amavisd/clamd.sock
 
+%files snmp
+%defattr(-,root,root)
+%attr(755,root,root) %{_initrddir}/amavisd-snmp
+%{_sbindir}/amavisd-snmp-subagent
+
 %changelog
+* Mon Aug 10 2009 Steven Pritchard <steve@kspei.com> 2.6.4-1
+- Update to 2.6.4.
+- Make a snmp sub-package for amavisd-snmp-subagent.
+
 * Fri Jul 24 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.6.2-4
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_12_Mass_Rebuild
 

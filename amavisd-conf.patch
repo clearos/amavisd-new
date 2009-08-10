@@ -1,5 +1,5 @@
---- amavisd-new-2.6.2/amavisd.conf	2008-12-15 01:50:03.000000000 +0100
-+++ amavisd-new-2.6.2/amavisd.conf.conf	2009-03-01 19:11:48.000000000 +0100
+--- amavisd-new-2.6.4/amavisd.conf.orig	2009-06-25 07:38:47.000000000 -0500
++++ amavisd-new-2.6.4/amavisd.conf	2009-08-10 14:28:13.000000000 -0500
 @@ -15,25 +15,25 @@
  # $bypass_decode_parts = 1;         # controls running of decoders&dearchivers
  
@@ -70,11 +70,11 @@
  # ### http://www.clamav.net/
 -# ['ClamAV-clamd',
 -#   \&ask_daemon, ["CONTSCAN {}\n", "/var/run/clamav/clamd"],
--#   qr/\bOK$/, qr/\bFOUND$/,
+-#   qr/\bOK$/m, qr/\bFOUND$/m,
 -#   qr/^.*?: (?!Infected Archive)(.*) FOUND$/m ],
 +['ClamAV-clamd',
 +  \&ask_daemon, ["CONTSCAN {}\n", "/var/spool/amavisd/clamd.sock"],
-+  qr/\bOK$/, qr/\bFOUND$/,
++  qr/\bOK$/m, qr/\bFOUND$/m,
 +  qr/^.*?: (?!Infected Archive)(.*) FOUND$/m ],
  # # NOTE: run clamd under the same user as amavisd, or run it under its own
  # #   uid such as clamav, add user clamav to the amavis group, and then add
