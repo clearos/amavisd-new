@@ -3,7 +3,7 @@
 Summary:        Email filter with virus scanner and spamassassin support
 Name:           amavisd-new
 Version:        2.6.4
-Release:        1%{?prerelease:.%{prerelease}}%{?dist}
+Release:        2%{?prerelease:.%{prerelease}}%{?dist}
 # LDAP schema is GFDL, some helpers are BSD, core is GPLv2+
 License:        GPLv2+ and BSD and GFDL
 Group:          Applications/System
@@ -19,6 +19,7 @@ Source7:        amavisd-snmp.init
 Patch0:         amavisd-conf.patch
 Patch1:         amavisd-init.patch
 Patch2:         amavisd-condrestart.patch
+Patch3:         amavisd-new-2.6.4-stdout.patch
 BuildRoot:      %{_tmppath}/%{name}-%{version}-root/
 Requires:       /usr/sbin/clamd, /etc/clamd.d
 Requires:       /usr/sbin/tmpwatch, /etc/cron.daily
@@ -113,6 +114,7 @@ alerting purposes.
 %patch0 -p1
 %patch1 -p1
 %patch2 -p0
+%patch3 -p1
 install -m644 %{SOURCE4} %{SOURCE5} README_FILES/
 
 sed -i -e 's,/var/amavis/amavisd.sock\>,/var/spool/amavisd/amavisd.sock,' \
@@ -210,6 +212,9 @@ fi
 %{_sbindir}/amavisd-snmp-subagent
 
 %changelog
+* Tue Nov  9 2010 Marcela Mašláňová <mmaslano@redhat.com> 2.6.4-2
+- 561389 patch from Sandro Janke - change stderr to stdout
+
 * Mon Aug 10 2009 Steven Pritchard <steve@kspei.com> 2.6.4-1
 - Update to 2.6.4.
 - Make a snmp sub-package for amavisd-snmp-subagent.

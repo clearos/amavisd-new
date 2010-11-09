@@ -1,0 +1,21 @@
+diff -up amavisd-new-2.6.4/amavisd.err amavisd-new-2.6.4/amavisd
+--- amavisd-new-2.6.4/amavisd.err	2010-11-09 09:24:54.065896574 +0100
++++ amavisd-new-2.6.4/amavisd	2010-11-09 09:25:59.192229627 +0100
+@@ -14014,14 +14014,14 @@ eval {
+     my($msg) = !defined($killed_amavisd_pid) ? undef :
+                "Daemon [$killed_amavisd_pid] terminated by SIG$kill_sig_used";
+     if ($cmd eq 'stop') {
+-      if (defined $msg) { do_log(2,"%s",$msg); print STDERR "$msg\n" }
++      if (defined $msg) { do_log(2,"%s",$msg); print STDOUT "$msg\n" }
+       exit(0);
+     }
+     if (defined $killed_amavisd_pid) {
+-      print STDERR "$msg, waiting for dust to settle...\n";
++      print STDOUT "$msg, waiting for dust to settle...\n";
+       sleep 5;  # wait for the TCP socket to be released
+     }
+-    print STDERR "becoming a new daemon...\n";
++    print STDOUT "becoming a new daemon...\n";
+   }
+   1;
+ } or do {
