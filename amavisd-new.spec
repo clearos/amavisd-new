@@ -2,8 +2,8 @@
 
 Summary:        Email filter with virus scanner and spamassassin support
 Name:           amavisd-new
-Version:        2.6.4
-Release:        3%{?prerelease:.%{prerelease}}%{?dist}
+Version:        2.6.6
+Release:        1%{?prerelease:.%{prerelease}}%{?dist}
 # LDAP schema is GFDL, some helpers are BSD, core is GPLv2+
 License:        GPLv2+ and BSD and GFDL
 Group:          Applications/System
@@ -16,6 +16,7 @@ Source4:        README.fedora
 Source5:        README.quarantine
 Source6:        amavisd.cron
 Source7:        amavisd-snmp.init
+Source8:        amavisd-new-tmpfiles.conf
 Patch0:         amavisd-conf.patch
 Patch1:         amavisd-init.patch
 Patch2:         amavisd-condrestart.patch
@@ -151,7 +152,12 @@ install -m755 %{SOURCE6} $RPM_BUILD_ROOT%{_sysconfdir}/cron.daily/amavisd
 
 mkdir -p $RPM_BUILD_ROOT/var/spool/amavisd/{tmp,db,quarantine}
 touch $RPM_BUILD_ROOT/var/spool/amavisd/clamd.sock
-mkdir -p $RPM_BUILD_ROOT/var/run/amavisd/
+mkdir -p $RPM_BUILD_ROOT/var/run/amavisd
+
+mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/tmpfiles.d
+install -m 644 %{SOURCE8} $RPM_BUILD_ROOT%{_sysconfdir}/tmpfiles.d/amavisd-new.conf
+
+mkdir -p $RPM_BUILD_ROOT/var/run/clamd.amavisd
 
 %clean
 rm -rf "$RPM_BUILD_ROOT"
@@ -199,12 +205,14 @@ fi
 %{_sbindir}/amavisd
 %{_sbindir}/clamd.amavisd
 %{_bindir}/amavisd-*
-%dir %attr(700,amavis,amavis) /var/spool/amavisd
+%dir %attr(710,amavis,amavis) /var/spool/amavisd
 %dir %attr(700,amavis,amavis) /var/spool/amavisd/tmp
 %dir %attr(700,amavis,amavis) /var/spool/amavisd/db
 %dir %attr(700,amavis,amavis) /var/spool/amavisd/quarantine
-%dir %attr(755,amavis,amavis) /var/run/amavisd
+%ghost %dir %attr(755,amavis,amavis) /var/run/amavisd
 %ghost /var/spool/amavisd/clamd.sock
+%attr(644,root,root) %{_sysconfdir}/tmpfiles.d/amavisd-new.conf
+%ghost %dir %attr(755,amavis,amavis) /var/run/clamd.amavisd
 
 %files snmp
 %defattr(-,root,root)
@@ -212,6 +220,14 @@ fi
 %{_sbindir}/amavisd-snmp-subagent
 
 %changelog
+* Sun Sep 18 2011 Steven Pritchard <steve@kspei.com> 2.6.6-1
+- Update to 2.6.6.
+- Make /var/spool/amavisd g+x (BZ 548234).
+- %%ghost /var/run/amavisd and add /etc/tmpfiles.d/amavisd-new-tmpfiles.conf
+  (BZ 656544, 676430, 710984, 734271).
+- Also add /var/run/clamd.amavisd (which seems to be a bug itself).  Fixes
+  BZ 696725.
+
 * Mon Feb 07 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.6.4-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild
 
