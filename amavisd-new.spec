@@ -3,7 +3,7 @@
 Summary:        Email filter with virus scanner and spamassassin support
 Name:           amavisd-new
 Version:        2.6.6
-Release:        2%{?prerelease:.%{prerelease}}%{?dist}
+Release:        3%{?prerelease:.%{prerelease}}%{?dist}
 # LDAP schema is GFDL, some helpers are BSD, core is GPLv2+
 License:        GPLv2+ and BSD and GFDL
 Group:          Applications/System
@@ -21,7 +21,7 @@ Patch0:         amavisd-conf.patch
 Patch1:         amavisd-init.patch
 Patch2:         amavisd-condrestart.patch
 Patch3:         amavisd-new-2.6.4-stdout.patch
-BuildRoot:      %{_tmppath}/%{name}-%{version}-root/
+BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Requires:       /usr/sbin/clamd, /etc/clamd.d
 Requires:       /usr/sbin/tmpwatch, /etc/cron.daily
 Requires:       /usr/bin/ar
@@ -74,11 +74,10 @@ Requires:       perl(NetAddr::IP)
 Requires:       perl(Razor2::Client::Version)
 Requires:       perl(Socket6)
 Requires:       perl(URI)
-Requires(pre):  /usr/sbin/useradd
+Requires(pre):  shadow-utils
 Requires(post): /sbin/chkconfig
-Requires(post): /sbin/service
-Requires(preun): /sbin/chkconfig
-Requires(preun): /sbin/service
+Requires(preun): /sbin/service, /sbin/chkconfig
+Requires(postun): /sbin/service
 BuildArch:      noarch
 
 %package snmp
@@ -86,9 +85,8 @@ Group:          Applications/System
 Summary:        Exports amavisd SNMP data
 Requires:       %{name} = %{version}-%{release}
 Requires(post): /sbin/chkconfig
-Requires(post): /sbin/service
-Requires(preun): /sbin/chkconfig
-Requires(preun): /sbin/service
+Requires(preun): /sbin/service, /sbin/chkconfig
+Requires(postun): /sbin/service
 
 %description
 amavisd-new is a high-performance and reliable interface between mailer
@@ -116,83 +114,80 @@ alerting purposes.
 %patch1 -p1
 %patch2 -p0
 %patch3 -p1
-install -m644 %{SOURCE4} %{SOURCE5} README_FILES/
 
-sed -i -e 's,/var/amavis/amavisd.sock\>,/var/spool/amavisd/amavisd.sock,' \
-    amavisd-release
+install -p -m 644 %{SOURCE4} %{SOURCE5} README_FILES/
+sed -e 's,/var/amavis/amavisd.sock\>,/var/spool/amavisd/amavisd.sock,' -i amavisd-release
 
 %build
 
 %install
-rm -rf "$RPM_BUILD_ROOT"
+rm -rf $RPM_BUILD_ROOT
 
-mkdir -p $RPM_BUILD_ROOT%{_sbindir}
-install -m755 amavisd{,-snmp-subagent} $RPM_BUILD_ROOT%{_sbindir}/
-( cd $RPM_BUILD_ROOT%{_sbindir} && ln -s clamd clamd.amavisd )
+install -D -p -m 755 amavisd $RPM_BUILD_ROOT%{_sbindir}/amavisd
+install -D -p -m 755 amavisd-snmp-subagent $RPM_BUILD_ROOT%{_sbindir}/amavisd-snmp-subagent
+ln -sf clamd $RPM_BUILD_ROOT%{_sbindir}/clamd.amavisd
 
 mkdir -p $RPM_BUILD_ROOT%{_bindir}
-install -m755 amavisd-{agent,nanny,release} $RPM_BUILD_ROOT%{_bindir}/
+install -p -m 755 amavisd-{agent,nanny,release} $RPM_BUILD_ROOT%{_bindir}/
 
-mkdir -p $RPM_BUILD_ROOT%{_initrddir}
-install -m755 amavisd_init.sh $RPM_BUILD_ROOT%{_initrddir}/amavisd
-install -m755 %{SOURCE1} $RPM_BUILD_ROOT%{_initrddir}/clamd.amavisd
-install -m755 %{SOURCE7} $RPM_BUILD_ROOT%{_initrddir}/amavisd-snmp
+install -D -p -m 755 amavisd_init.sh $RPM_BUILD_ROOT%{_initrddir}/amavisd
+install -D -p -m 755 %{SOURCE1} $RPM_BUILD_ROOT%{_initrddir}/clamd.amavisd
+install -D -p -m 755 %{SOURCE7} $RPM_BUILD_ROOT%{_initrddir}/amavisd-snmp
 
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/amavisd
-install -m644 amavisd.conf $RPM_BUILD_ROOT%{_sysconfdir}/amavisd/
-
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/clamd.d
-install -m644 %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/clamd.d/amavisd.conf
-
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig
-install -m644 %{SOURCE3} $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/clamd.amavisd
-
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/cron.daily
-install -m755 %{SOURCE6} $RPM_BUILD_ROOT%{_sysconfdir}/cron.daily/amavisd
+install -D -p -m 644 amavisd.conf $RPM_BUILD_ROOT%{_sysconfdir}/amavisd/amavisd.conf
+install -D -p -m 644 %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/clamd.d/amavisd.conf
+install -D -p -m 644 %{SOURCE3} $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/clamd.amavisd
+install -D -p -m 755 %{SOURCE6} $RPM_BUILD_ROOT%{_sysconfdir}/cron.daily/amavisd
 
 mkdir -p $RPM_BUILD_ROOT/var/spool/amavisd/{tmp,db,quarantine}
 touch $RPM_BUILD_ROOT/var/spool/amavisd/clamd.sock
-mkdir -p $RPM_BUILD_ROOT/var/run/amavisd
+mkdir -p $RPM_BUILD_ROOT/var/run/{amavisd,clamd.amavisd}
 
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/tmpfiles.d
-install -m 644 %{SOURCE8} $RPM_BUILD_ROOT%{_sysconfdir}/tmpfiles.d/amavisd-new.conf
-
-mkdir -p $RPM_BUILD_ROOT/var/run/clamd.amavisd
+%if 0%{?fedora}%{?rhel} > 6
+install -D -m 644 %{SOURCE8} $RPM_BUILD_ROOT%{_sysconfdir}/tmpfiles.d/amavisd-new.conf
+%endif
 
 %clean
-rm -rf "$RPM_BUILD_ROOT"
+rm -rf $RPM_BUILD_ROOT
 
 %pre
-if ! id amavis &>/dev/null ; then
-    /usr/sbin/useradd -r -s /sbin/nologin -d /var/spool/amavisd amavis
-fi
+getent group amavis > /dev/null || %{_sbindir}/groupadd -r amavis
+getent passwd amavis > /dev/null || %{_sbindir}/useradd -r -g amavis -d /var/spool/amavisd -s /sbin/nologin -c "User for amavisd-new" amavis
 
 %preun
-if [ "$1" = 0 ]; then
-    /sbin/service amavisd stop 2>/dev/null || :
-    /sbin/chkconfig --del amavisd || :
-    /sbin/service clamd.amavisd stop 2>/dev/null || :
-    /sbin/chkconfig --del clamd.amavisd || :
+if [ $1 -eq 0 ]; then
+  /sbin/service amavisd stop > /dev/null 2>&1 || :
+  /sbin/chkconfig --del amavisd
+  /sbin/service clamd.amavisd stop > /dev/null 2>&1 || :
+  /sbin/chkconfig --del clamd.amavisd
 fi
 
 %preun snmp
-if [ "$1" = 0 ]; then
-    /sbin/service amavisd-snmp stop 2>/dev/null || :
-    /sbin/chkconfig --del amavisd-snmp || :
+if [ $1 -eq 0 ]; then
+  /sbin/service amavisd-snmp stop > /dev/null 2>&1 || :
+  /sbin/chkconfig --del amavisd-snmp
 fi
 
 %post
-/sbin/chkconfig --add clamd.amavisd || :
-/sbin/service clamd.amavisd condrestart || :
-/sbin/chkconfig --add amavisd || :
-/sbin/service amavisd condrestart || :
+/sbin/chkconfig --add clamd.amavisd
+/sbin/chkconfig --add amavisd
 
 %post snmp
-/sbin/chkconfig --add amavisd-snmp || :
-/sbin/service amavisd-snmp condrestart || :
+/sbin/chkconfig --add amavisd-snmp
+
+%postun
+if [ $1 -ne 0 ]; then
+  /sbin/service clamd.amavisd condrestart > /dev/null 2>&1 || :
+  /sbin/service amavisd condrestart > /dev/null 2>&1 || :
+fi
+
+%postun snmp
+if [ $1 -ne 0 ]; then
+  /sbin/service amavisd-snmp condrestart > /dev/null 2>&1 || :
+fi
 
 %files
-%defattr(-,root,root)
+%defattr(-,root,root,-)
 %doc AAAREADME.first LDAP.schema LICENSE RELEASE_NOTES TODO
 %doc README_FILES test-messages amavisd.conf-*
 %dir %{_sysconfdir}/amavisd/
@@ -209,17 +204,25 @@ fi
 %dir %attr(700,amavis,amavis) /var/spool/amavisd/tmp
 %dir %attr(700,amavis,amavis) /var/spool/amavisd/db
 %dir %attr(700,amavis,amavis) /var/spool/amavisd/quarantine
-%ghost %dir %attr(755,amavis,amavis) /var/run/amavisd
 %ghost /var/spool/amavisd/clamd.sock
+%if 0%{?fedora}%{?rhel} > 6
 %attr(644,root,root) %{_sysconfdir}/tmpfiles.d/amavisd-new.conf
+%ghost %dir %attr(755,amavis,amavis) /var/run/amavisd
 %ghost %dir %attr(755,amavis,amavis) /var/run/clamd.amavisd
+%else
+%dir %attr(755,amavis,amavis) /var/run/amavisd
+%dir %attr(755,amavis,amavis) /var/run/clamd.amavisd
+%endif
 
 %files snmp
-%defattr(-,root,root)
+%defattr(-,root,root,-)
 %attr(755,root,root) %{_initrddir}/amavisd-snmp
 %{_sbindir}/amavisd-snmp-subagent
 
 %changelog
+* Fri Jun 29 2012 Robert Scheck <robert@fedoraproject.org> 2.6.6-3
+- Various minor spec file cleanups
+
 * Thu Jan 12 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.6.6-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
