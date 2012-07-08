@@ -1,13 +1,13 @@
---- amavisd-new-2.6.4/amavisd.conf.orig	2009-06-25 07:38:47.000000000 -0500
-+++ amavisd-new-2.6.4/amavisd.conf	2009-08-10 14:28:13.000000000 -0500
-@@ -15,25 +15,25 @@
+--- amavisd-new-2.8.0/amavisd.conf		2012-06-30 23:33:32.000000000 +0200
++++ amavisd-new-2.8.0/amavisd.conf.conf		2012-07-05 22:14:48.000000000 +0200
+@@ -14,25 +14,25 @@
  # $bypass_decode_parts = 1;         # controls running of decoders&dearchivers
  
  $max_servers = 2;            # num of pre-forked children (2..30 is common), -m
 -$daemon_user  = 'vscan';     # (no default;  customary: vscan or amavis), -u
 -$daemon_group = 'vscan';     # (no default;  customary: vscan or amavis), -g
-+$daemon_user  = 'amavis';     # (no default;  customary: vscan or amavis), -u
-+$daemon_group = 'amavis';     # (no default;  customary: vscan or amavis), -g
++$daemon_user  = 'amavis';    # (no default;  customary: vscan or amavis), -u
++$daemon_group = 'amavis';    # (no default;  customary: vscan or amavis), -g
  
  $mydomain = 'example.com';   # a convenient default for other settings
  
@@ -33,7 +33,7 @@
  #NOTE: create directories $MYHOME/tmp, $MYHOME/var, $MYHOME/db manually
  
  $log_level = 0;              # verbosity 0..5, -d
-@@ -116,11 +116,11 @@
+@@ -113,11 +113,11 @@
  # $timestamp_fmt_mysql = 1; # if using MySQL *and* msgs.time_iso is TIMESTAMP;
  #   defaults to 0, which is good for non-MySQL or if msgs.time_iso is CHAR(16)
  
@@ -49,33 +49,67 @@
  $mailfrom_to_quarantine = ''; # null return path; uses original sender if undef
  
  @addr_extension_virus_maps      = ('virus');
-@@ -154,10 +154,10 @@
+@@ -151,10 +151,10 @@
  # $notify_method  = 'smtp:[127.0.0.1]:10025';
  # $forward_method = 'smtp:[127.0.0.1]:10025';  # set to undef with milter!
  
 -# $final_virus_destiny      = D_DISCARD;
--# $final_banned_destiny     = D_BOUNCE;
--# $final_spam_destiny       = D_BOUNCE;
+-# $final_banned_destiny     = D_DISCARD;
+-# $final_spam_destiny       = D_PASS;  #!!!  D_DISCARD / D_REJECT
 -# $final_bad_header_destiny = D_PASS;
 +$final_virus_destiny      = D_DISCARD;
 +$final_banned_destiny     = D_BOUNCE;
-+$final_spam_destiny       = D_DISCARD;
++$final_spam_destiny       = D_DISCARD;  #!!!  D_DISCARD / D_REJECT
 +$final_bad_header_destiny = D_BOUNCE;
  # $bad_header_quarantine_method = undef;
  
  # $os_fingerprint_method = 'p0f:*:2345';  # to query p0f-analyzer.pl
-@@ -360,10 +360,10 @@
- # ['Sophos SAVI', \&sophos_savi ],
+@@ -375,16 +375,16 @@
+ #   qr/^(?:310|420)[,\s]*(?:.* <<< )?(.+?)(?: ; |$)/m ],
+ # settings for the SAVAPI3.conf: ArchiveScan=1, HeurLevel=2, MailboxScan=1
  
- # ### http://www.clamav.net/
+-# ### http://www.clamav.net/
 -# ['ClamAV-clamd',
--#   \&ask_daemon, ["CONTSCAN {}\n", "/var/run/clamav/clamd"],
+-#   \&ask_daemon, ["CONTSCAN {}\n", "/var/run/clamav/clamd.sock"],
 -#   qr/\bOK$/m, qr/\bFOUND$/m,
 -#   qr/^.*?: (?!Infected Archive)(.*) FOUND$/m ],
-+['ClamAV-clamd',
-+  \&ask_daemon, ["CONTSCAN {}\n", "/var/spool/amavisd/clamd.sock"],
-+  qr/\bOK$/m, qr/\bFOUND$/m,
-+  qr/^.*?: (?!Infected Archive)(.*) FOUND$/m ],
- # # NOTE: run clamd under the same user as amavisd, or run it under its own
- # #   uid such as clamav, add user clamav to the amavis group, and then add
- # #   AllowSupplementaryGroups to clamd.conf;
+-# # NOTE: run clamd under the same user as amavisd - or run it under its own
+-# #   uid such as clamav, add user clamav to the amavis group, and then add
+-# #   AllowSupplementaryGroups to clamd.conf;
+-# # NOTE: match socket name (LocalSocket) in clamav.conf to the socket name in
+-# #   this entry; when running chrooted one may prefer a socket under $MYHOME.
++  ### http://www.clamav.net/
++  ['ClamAV-clamd',
++    \&ask_daemon, ["CONTSCAN {}\n", "/var/spool/amavisd/clamd.sock"],
++    qr/\bOK$/m, qr/\bFOUND$/m,
++    qr/^.*?: (?!Infected Archive)(.*) FOUND$/m ],
++  # NOTE: run clamd under the same user as amavisd - or run it under its own
++  #   uid such as clamav, add user clamav to the amavis group, and then add
++  #   AllowSupplementaryGroups to clamd.conf;
++  # NOTE: match socket name (LocalSocket) in clamav.conf to the socket name in
++  #   this entry; when running chrooted one may prefer a socket under $MYHOME.
+ 
+ # ### http://www.clamav.net/ and CPAN  (memory-hungry! clamd is preferred)
+ # # note that Mail::ClamAV requires perl to be build with threading!
+--- amavisd-new-2.8.0/amavisd-nanny		2009-06-25 19:57:13.000000000 +0200
++++ amavisd-new-2.8.0/amavisd-nanny.conf	2012-07-08 01:00:58.000000000 +0200
+@@ -58,7 +58,7 @@
+ 
+ my($dbfile) = 'nanny.db';
+ my($db_home) =  # DB databases directory
+-  defined $ENV{'AMAVISD_DB_HOME'} ? $ENV{'AMAVISD_DB_HOME'} : '/var/amavis/db';
++  defined $ENV{'AMAVISD_DB_HOME'} ? $ENV{'AMAVISD_DB_HOME'} : '/var/spool/amavisd/db';
+ my($wakeuptime) = 2;  # -w, sleep time in seconds, may be fractional
+ my($repeatcount);     # -c, repeat count (when defined)
+ 
+--- amavisd-new-2.8.0/amavisd-agent		2009-06-18 21:17:30.000000000 +0200
++++ amavisd-new-2.8.0/amavisd-agent.conf	2012-07-08 01:03:16.000000000 +0200
+@@ -50,7 +50,7 @@
+ 
+ my($dbfile) = 'snmp.db';
+ my($db_home) =  # DB databases directory
+-  defined $ENV{'AMAVISD_DB_HOME'} ? $ENV{'AMAVISD_DB_HOME'} : '/var/amavis/db';
++  defined $ENV{'AMAVISD_DB_HOME'} ? $ENV{'AMAVISD_DB_HOME'} : '/var/spool/amavisd/db';
+ 
+ my($wakeuptime) = 10;  # -w, sleep time in seconds, may be fractional
+ my($repeatcount);      # -c, repeat count (when defined)

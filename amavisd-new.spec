@@ -2,8 +2,8 @@
 
 Summary:        Email filter with virus scanner and spamassassin support
 Name:           amavisd-new
-Version:        2.6.6
-Release:        3%{?prerelease:.%{prerelease}}%{?dist}
+Version:        2.8.0
+Release:        1%{?prerelease:.%{prerelease}}%{?dist}
 # LDAP schema is GFDL, some helpers are BSD, core is GPLv2+
 License:        GPLv2+ and BSD and GFDL
 Group:          Applications/System
@@ -20,7 +20,6 @@ Source8:        amavisd-new-tmpfiles.conf
 Patch0:         amavisd-conf.patch
 Patch1:         amavisd-init.patch
 Patch2:         amavisd-condrestart.patch
-Patch3:         amavisd-new-2.6.4-stdout.patch
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Requires:       /usr/sbin/clamd, /etc/clamd.d
 Requires:       /usr/sbin/tmpwatch, /etc/cron.daily
@@ -35,7 +34,7 @@ Requires:       freeze
 Requires:       gzip
 Requires:       lzop
 Requires:       nomarch
-Requires:       p7zip
+Requires:       p7zip, p7zip-plugins
 Requires:       tar
 # We probably should parse the fetch_modules() code in amavisd for this list.
 # These are just the dependencies that don't get picked up otherwise.
@@ -113,7 +112,6 @@ alerting purposes.
 %patch0 -p1
 %patch1 -p1
 %patch2 -p0
-%patch3 -p1
 
 install -p -m 644 %{SOURCE4} %{SOURCE5} README_FILES/
 sed -e 's,/var/amavis/amavisd.sock\>,/var/spool/amavisd/amavisd.sock,' -i amavisd-release
@@ -188,7 +186,7 @@ fi
 
 %files
 %defattr(-,root,root,-)
-%doc AAAREADME.first LDAP.schema LICENSE RELEASE_NOTES TODO
+%doc AAAREADME.first LDAP.schema LDAP.ldif LICENSE RELEASE_NOTES
 %doc README_FILES test-messages amavisd.conf-*
 %dir %{_sysconfdir}/amavisd/
 %attr(755,root,root) %{_initrddir}/amavisd
@@ -216,10 +214,14 @@ fi
 
 %files snmp
 %defattr(-,root,root,-)
+%doc AMAVIS-MIB.txt
 %attr(755,root,root) %{_initrddir}/amavisd-snmp
 %{_sbindir}/amavisd-snmp-subagent
 
 %changelog
+* Sun Jul 08 2012 Robert Scheck <robert@fedoraproject.org> 2.8.0-1
+- Upgrade to 2.8.0
+
 * Fri Jun 29 2012 Robert Scheck <robert@fedoraproject.org> 2.6.6-3
 - Various minor spec file cleanups
 
