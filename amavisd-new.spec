@@ -3,7 +3,7 @@
 Summary:        Email filter with virus scanner and spamassassin support
 Name:           amavisd-new
 Version:        2.8.0
-Release:        1%{?prerelease:.%{prerelease}}%{?dist}
+Release:        2%{?prerelease:.%{prerelease}}%{?dist}
 # LDAP schema is GFDL, some helpers are BSD, core is GPLv2+
 License:        GPLv2+ and BSD and GFDL
 Group:          Applications/System
@@ -219,6 +219,9 @@ fi
 %{_sbindir}/amavisd-snmp-subagent
 
 %changelog
+* Wed Jul 18 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.8.0-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
 * Sun Jul 08 2012 Robert Scheck <robert@fedoraproject.org> 2.8.0-1
 - Upgrade to 2.8.0
 
