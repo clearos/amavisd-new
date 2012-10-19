@@ -3,7 +3,7 @@
 Summary:        Email filter with virus scanner and spamassassin support
 Name:           amavisd-new
 Version:        2.8.0
-Release:        2%{?prerelease:.%{prerelease}}%{?dist}
+Release:        3%{?prerelease:.%{prerelease}}%{?dist}
 # LDAP schema is GFDL, some helpers are BSD, core is GPLv2+
 License:        GPLv2+ and BSD and GFDL
 Group:          Applications/System
@@ -36,6 +36,8 @@ Requires:       lzop
 Requires:       nomarch
 Requires:       p7zip, p7zip-plugins
 Requires:       tar
+Requires:       lrzip
+Requires:       unzoo
 # We probably should parse the fetch_modules() code in amavisd for this list.
 # These are just the dependencies that don't get picked up otherwise.
 Requires:       perl(Archive::Tar)
@@ -219,6 +221,9 @@ fi
 %{_sbindir}/amavisd-snmp-subagent
 
 %changelog
+* Fri Oct 19 2012 Robert Scheck <robert@fedoraproject.org> 2.8.0-3
+- Added requirements to lrzip and unzoo for unpacking
+
 * Wed Jul 18 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.8.0-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
 
