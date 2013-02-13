@@ -3,7 +3,7 @@
 Summary:        Email filter with virus scanner and spamassassin support
 Name:           amavisd-new
 Version:        2.8.0
-Release:        3%{?prerelease:.%{prerelease}}%{?dist}
+Release:        4%{?prerelease:.%{prerelease}}%{?dist}
 # LDAP schema is GFDL, some helpers are BSD, core is GPLv2+
 License:        GPLv2+ and BSD and GFDL
 Group:          Applications/System
@@ -221,6 +221,9 @@ fi
 %{_sbindir}/amavisd-snmp-subagent
 
 %changelog
+* Wed Feb 13 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.8.0-4
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_19_Mass_Rebuild
+
 * Fri Oct 19 2012 Robert Scheck <robert@fedoraproject.org> 2.8.0-3
 - Added requirements to lrzip and unzoo for unpacking
 
