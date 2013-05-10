@@ -3,7 +3,7 @@
 Summary:        Email filter with virus scanner and spamassassin support
 Name:           amavisd-new
 Version:        2.8.0
-Release:        4%{?prerelease:.%{prerelease}}%{?dist}
+Release:        5%{?prerelease:.%{prerelease}}%{?dist}
 # LDAP schema is GFDL, some helpers are BSD, core is GPLv2+
 License:        GPLv2+ and BSD and GFDL
 Group:          Applications/System
@@ -20,6 +20,11 @@ Source8:        amavisd-new-tmpfiles.conf
 Patch0:         amavisd-conf.patch
 Patch1:         amavisd-init.patch
 Patch2:         amavisd-condrestart.patch
+# Don't source /etc/sysconfig/network in init script; the network check
+# is commented out upstream so there's no apparent reason to source it,
+# and it can't be relied upon to exist in recent Fedora builds. Mail
+# sent upstream to amavis-users ML 2013-05-10. -adamw
+Patch3:         amavisd-new-2.8.0-init_network.patch
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Requires:       /usr/sbin/clamd, /etc/clamd.d
 Requires:       /usr/sbin/tmpwatch, /etc/cron.daily
@@ -114,6 +119,7 @@ alerting purposes.
 %patch0 -p1
 %patch1 -p1
 %patch2 -p0
+%patch3 -p1
 
 install -p -m 644 %{SOURCE4} %{SOURCE5} README_FILES/
 sed -e 's,/var/amavis/amavisd.sock\>,/var/spool/amavisd/amavisd.sock,' -i amavisd-release
@@ -221,6 +227,9 @@ fi
 %{_sbindir}/amavisd-snmp-subagent
 
 %changelog
+* Fri May 10 2013 Adam Williamson <awilliam@redhat.com> - 2.8.0-5
+- init_network.patch: don't source /etc/sysconfig/network in initscript
+
 * Wed Feb 13 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.8.0-4
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_19_Mass_Rebuild
 
