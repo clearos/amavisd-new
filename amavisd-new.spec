@@ -3,7 +3,7 @@
 Summary:        Email filter with virus scanner and spamassassin support
 Name:           amavisd-new
 Version:        2.8.0
-Release:        5%{?prerelease:.%{prerelease}}%{?dist}
+Release:        6%{?prerelease:.%{prerelease}}%{?dist}
 # LDAP schema is GFDL, some helpers are BSD, core is GPLv2+
 License:        GPLv2+ and BSD and GFDL
 Group:          Applications/System
@@ -227,6 +227,9 @@ fi
 %{_sbindir}/amavisd-snmp-subagent
 
 %changelog
+* Thu Jul 18 2013 Petr Pisar <ppisar@redhat.com> - 2.8.0-6
+- Perl 5.18 rebuild
+
 * Fri May 10 2013 Adam Williamson <awilliam@redhat.com> - 2.8.0-5
 - init_network.patch: don't source /etc/sysconfig/network in initscript
 
