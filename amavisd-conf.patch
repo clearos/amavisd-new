@@ -1,5 +1,5 @@
 --- amavisd-new-2.8.0/amavisd.conf		2012-06-30 23:33:32.000000000 +0200
-+++ amavisd-new-2.8.0/amavisd.conf.conf		2012-07-05 22:14:48.000000000 +0200
++++ amavisd-new-2.8.0/amavisd.conf.conf		2013-12-02 16:24:05.000000000 +0100
 @@ -14,25 +14,25 @@
  # $bypass_decode_parts = 1;         # controls running of decoders&dearchivers
  
@@ -64,6 +64,18 @@
  # $bad_header_quarantine_method = undef;
  
  # $os_fingerprint_method = 'p0f:*:2345';  # to query p0f-analyzer.pl
+@@ -335,9 +335,9 @@
+   ['arj',  \&do_unarj, ['unarj', 'arj'] ],
+   ['arc',  \&do_arc,   ['nomarch', 'arc'] ],
+   ['zoo',  \&do_zoo,   ['zoo', 'unzoo'] ],
+-  ['doc',  \&do_ole,   'ripole'],
++# ['doc',  \&do_ole,   'ripole'],  # no ripole package so far
+   ['cab',  \&do_cabextract, 'cabextract'],
+-  ['tnef', \&do_tnef_ext, 'tnef'],
++# ['tnef', \&do_tnef_ext, 'tnef'],  # use internal do_tnef() instead
+   ['tnef', \&do_tnef],
+ # ['lha',  \&do_lha,   'lha'],  # not safe, use 7z instead
+ # ['sit',  \&do_unstuff, 'unstuff'],  # not safe
 @@ -375,16 +375,16 @@
  #   qr/^(?:310|420)[,\s]*(?:.* <<< )?(.+?)(?: ; |$)/m ],
  # settings for the SAVAPI3.conf: ArchiveScan=1, HeurLevel=2, MailboxScan=1
