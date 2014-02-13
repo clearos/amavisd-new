@@ -11,20 +11,17 @@ optional components for amavisd-new.
 
 Next, configure amavisd-new to start on boot:
 
-  chkconfig --level 2345 amavisd on
+  systemctl enable amavisd.service
 
-If you want to use the Clam Antivirus daemon (recommended), set it to
-start on boot as well:
+When you are ready, start the amavisd service, it will also start
+a clamd instance if available.
 
-  chkconfig --level 2345 clamd.amavisd on
+  systemctl start amavisd.service
 
-When you are ready, start the clamd.amavisd (optional but recommended)
-and amavisd services:
+Check /var/log/maillog for startup messages of amavisd and clamd.
+You can also check the journal.
 
-  service clamd.amavisd start
-  service amavisd start
-
-Check /var/log/maillog for startup messages from both daemons.
+  journalctl -a -u amavisd -u clamd@amavisd
 
 The next step is to integrate amavisd with your MTA.
 

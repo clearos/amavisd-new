@@ -2,21 +2,20 @@
 
 Summary:        Email filter with virus scanner and spamassassin support
 Name:           amavisd-new
-Version:        2.8.0
-Release:        8%{?prerelease:.%{prerelease}}%{?dist}
+Version:        2.8.1
+Release:        1%{?prerelease:.%{prerelease}}%{?dist}
 # LDAP schema is GFDL, some helpers are BSD, core is GPLv2+
 License:        GPLv2+ and BSD and GFDL
 Group:          Applications/System
 URL:            http://www.ijs.si/software/amavisd/
 Source0:        http://www.ijs.si/software/amavisd/amavisd-new-%{version}%{?prerelease:-%{prerelease}}.tar.gz
-Source1:        amavis-clamd.init
 Source2:        amavis-clamd.conf
-Source3:        amavis-clamd.sysconfig
 Source4:        README.fedora
 Source5:        README.quarantine
 Source6:        amavisd.cron
-Source7:        amavisd-snmp.init
 Source8:        amavisd-new-tmpfiles.conf
+Source9:        amavisd.service
+Source10:       amavisd-snmp.service
 Patch0:         amavisd-conf.patch
 Patch1:         amavisd-init.patch
 Patch2:         amavisd-condrestart.patch
@@ -26,7 +25,10 @@ Patch2:         amavisd-condrestart.patch
 # sent upstream to amavis-users ML 2013-05-10. -adamw
 Patch3:         amavisd-new-2.8.0-init_network.patch
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-Requires:       /usr/sbin/clamd, /etc/clamd.d
+BuildArch:      noarch
+BuildRequires:  systemd
+Requires:       clamav-server
+Requires:       clamav-server-systemd
 Requires:       /usr/sbin/tmpwatch, /etc/cron.daily
 Requires:       /usr/bin/ar
 Requires:       altermime
@@ -76,23 +78,25 @@ Requires:       perl(Mail::SpamAssassin)
 Requires:       perl(Net::DNS)
 Requires:       perl(Net::LDAP)
 Requires:       perl(Net::SSLeay)
+Requires:       perl(Net::Server)
 Requires:       perl(NetAddr::IP)
 Requires:       perl(Razor2::Client::Version)
 Requires:       perl(Socket6)
+Requires:       perl(Unix::Syslog)
 Requires:       perl(URI)
 Requires(pre):  shadow-utils
-Requires(post): /sbin/chkconfig
-Requires(preun): /sbin/service, /sbin/chkconfig
-Requires(postun): /sbin/service
-BuildArch:      noarch
+Requires(post): systemd
+Requires(preun): systemd
+Requires(postun): systemd
 
 %package snmp
 Group:          Applications/System
 Summary:        Exports amavisd SNMP data
 Requires:       %{name} = %{version}-%{release}
-Requires(post): /sbin/chkconfig
-Requires(preun): /sbin/service, /sbin/chkconfig
-Requires(postun): /sbin/service
+Requires:       perl(NetSNMP::OID)
+Requires(post): systemd
+Requires(preun): systemd
+Requires(postun): systemd
 
 %description
 amavisd-new is a high-performance and reliable interface between mailer
@@ -122,7 +126,7 @@ alerting purposes.
 %patch3 -p1
 
 install -p -m 644 %{SOURCE4} %{SOURCE5} README_FILES/
-sed -e 's,/var/amavis/amavisd.sock\>,/var/spool/amavisd/amavisd.sock,' -i amavisd-release
+sed -e 's,/var/amavis/amavisd.sock\>,%{_localstatedir}/spool/amavisd/amavisd.sock,' -i amavisd-release
 
 %build
 
@@ -131,26 +135,23 @@ rm -rf $RPM_BUILD_ROOT
 
 install -D -p -m 755 amavisd $RPM_BUILD_ROOT%{_sbindir}/amavisd
 install -D -p -m 755 amavisd-snmp-subagent $RPM_BUILD_ROOT%{_sbindir}/amavisd-snmp-subagent
-ln -sf clamd $RPM_BUILD_ROOT%{_sbindir}/clamd.amavisd
 
 mkdir -p $RPM_BUILD_ROOT%{_bindir}
 install -p -m 755 amavisd-{agent,nanny,release} $RPM_BUILD_ROOT%{_bindir}/
 
-install -D -p -m 755 amavisd_init.sh $RPM_BUILD_ROOT%{_initrddir}/amavisd
-install -D -p -m 755 %{SOURCE1} $RPM_BUILD_ROOT%{_initrddir}/clamd.amavisd
-install -D -p -m 755 %{SOURCE7} $RPM_BUILD_ROOT%{_initrddir}/amavisd-snmp
+install -D -p -m 644 %{SOURCE9} $RPM_BUILD_ROOT%{_unitdir}/amavisd.service
+install -D -p -m 644 %{SOURCE10} $RPM_BUILD_ROOT%{_unitdir}/amavisd-snmp.service
 
 install -D -p -m 644 amavisd.conf $RPM_BUILD_ROOT%{_sysconfdir}/amavisd/amavisd.conf
 install -D -p -m 644 %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/clamd.d/amavisd.conf
-install -D -p -m 644 %{SOURCE3} $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/clamd.amavisd
 install -D -p -m 755 %{SOURCE6} $RPM_BUILD_ROOT%{_sysconfdir}/cron.daily/amavisd
 
-mkdir -p $RPM_BUILD_ROOT/var/spool/amavisd/{tmp,db,quarantine}
-touch $RPM_BUILD_ROOT/var/spool/amavisd/clamd.sock
-mkdir -p $RPM_BUILD_ROOT/var/run/{amavisd,clamd.amavisd}
+mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/spool/amavisd/{tmp,db,quarantine}
+touch $RPM_BUILD_ROOT%{_localstatedir}/spool/amavisd/clamd.sock
+mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/run/amavisd
 
-%if 0%{?fedora}%{?rhel} > 6
-install -D -m 644 %{SOURCE8} $RPM_BUILD_ROOT%{_sysconfdir}/tmpfiles.d/amavisd-new.conf
+%if 0%{?fedora} > 17
+install -D -m 644 %{SOURCE8} $RPM_BUILD_ROOT%{_tmpfilesdir}/amavisd-new.conf
 %endif
 
 %clean
@@ -158,75 +159,65 @@ rm -rf $RPM_BUILD_ROOT
 
 %pre
 getent group amavis > /dev/null || %{_sbindir}/groupadd -r amavis
-getent passwd amavis > /dev/null || %{_sbindir}/useradd -r -g amavis -d /var/spool/amavisd -s /sbin/nologin -c "User for amavisd-new" amavis
+getent passwd amavis > /dev/null || \
+  %{_sbindir}/useradd -r -g amavis -d %{_localstatedir}/spool/amavisd -s /sbin/nologin \
+  -c "User for amavisd-new" amavis
+exit 0
 
 %preun
-if [ $1 -eq 0 ]; then
-  /sbin/service amavisd stop > /dev/null 2>&1 || :
-  /sbin/chkconfig --del amavisd
-  /sbin/service clamd.amavisd stop > /dev/null 2>&1 || :
-  /sbin/chkconfig --del clamd.amavisd
-fi
+%systemd_preun amavisd.service
 
 %preun snmp
-if [ $1 -eq 0 ]; then
-  /sbin/service amavisd-snmp stop > /dev/null 2>&1 || :
-  /sbin/chkconfig --del amavisd-snmp
-fi
+%systemd_preun amavisd-snmp.service
 
 %post
-/sbin/chkconfig --add clamd.amavisd
-/sbin/chkconfig --add amavisd
+%systemd_post amavisd.service
 
 %post snmp
-/sbin/chkconfig --add amavisd-snmp
+%systemd_post amavisd-snmp.service
 
 %postun
-if [ $1 -ne 0 ]; then
-  /sbin/service clamd.amavisd condrestart > /dev/null 2>&1 || :
-  /sbin/service amavisd condrestart > /dev/null 2>&1 || :
-fi
+%systemd_postun_with_restart amavisd.service
 
 %postun snmp
-if [ $1 -ne 0 ]; then
-  /sbin/service amavisd-snmp condrestart > /dev/null 2>&1 || :
-fi
+%systemd_postun_with_restart amavisd-snmp.service
 
 %files
 %defattr(-,root,root,-)
 %doc AAAREADME.first LDAP.schema LDAP.ldif LICENSE RELEASE_NOTES
 %doc README_FILES test-messages amavisd.conf-*
 %dir %{_sysconfdir}/amavisd/
-%attr(755,root,root) %{_initrddir}/amavisd
-%attr(755,root,root) %{_initrddir}/clamd.amavisd
+%{_unitdir}/amavisd.service
 %config(noreplace) %{_sysconfdir}/amavisd/amavisd.conf
 %config(noreplace) %{_sysconfdir}/clamd.d/amavisd.conf
-%config(noreplace) %{_sysconfdir}/sysconfig/clamd.amavisd
 %config(noreplace) %{_sysconfdir}/cron.daily/amavisd
 %{_sbindir}/amavisd
-%{_sbindir}/clamd.amavisd
 %{_bindir}/amavisd-*
-%dir %attr(710,amavis,amavis) /var/spool/amavisd
-%dir %attr(700,amavis,amavis) /var/spool/amavisd/tmp
-%dir %attr(700,amavis,amavis) /var/spool/amavisd/db
-%dir %attr(700,amavis,amavis) /var/spool/amavisd/quarantine
-%ghost /var/spool/amavisd/clamd.sock
-%if 0%{?fedora}%{?rhel} > 6
-%attr(644,root,root) %{_sysconfdir}/tmpfiles.d/amavisd-new.conf
-%ghost %dir %attr(755,amavis,amavis) /var/run/amavisd
-%ghost %dir %attr(755,amavis,amavis) /var/run/clamd.amavisd
-%else
-%dir %attr(755,amavis,amavis) /var/run/amavisd
-%dir %attr(755,amavis,amavis) /var/run/clamd.amavisd
+%dir %attr(710,amavis,amavis) %{_localstatedir}/spool/amavisd
+%dir %attr(700,amavis,amavis) %{_localstatedir}/spool/amavisd/tmp
+%dir %attr(700,amavis,amavis) %{_localstatedir}/spool/amavisd/db
+%dir %attr(700,amavis,amavis) %{_localstatedir}/spool/amavisd/quarantine
+%ghost %{_localstatedir}/spool/amavisd/clamd.sock
+%if 0%{?fedora} > 17
+%attr(644,root,root) %{_tmpfilesdir}/amavisd-new.conf
 %endif
+%dir %attr(755,amavis,amavis) %{_localstatedir}/run/amavisd
 
 %files snmp
 %defattr(-,root,root,-)
 %doc AMAVIS-MIB.txt
-%attr(755,root,root) %{_initrddir}/amavisd-snmp
+%{_unitdir}/amavisd-snmp.service
 %{_sbindir}/amavisd-snmp-subagent
 
 %changelog
+* Wed Feb 12 2014 Juan Orti Alcaine <jorti@fedoraproject.org> 2.8.1-1
+- Update to version 2.8.1
+- Add systemd service units
+- Add missing dependencies
+- Start clamd using instantiated service
+- Place tmpfiles conf in _tmpfilesdir
+- Use _localstatedir macro
+
 * Mon Dec 02 2013 Robert Scheck <robert@fedoraproject.org> 2.8.0-8
 - Commented ripole(1) decoder as the binary is not packaged
 - Commented tnef(1) decoder as the perl module is a dependency
@@ -289,7 +280,7 @@ fi
 - Update to 2.6.2.
 - Drop smtpdaemon dependency (BZ# 438078).
 
-* Wed Jul 15 2008 Steven Pritchard <steve@kspei.com> 2.6.1-1
+* Tue Jul 15 2008 Steven Pritchard <steve@kspei.com> 2.6.1-1
 - Update to 2.6.1.
 - Require Crypt::OpenSSL::RSA, Digest::SHA, Digest::SHA1, IO::Socket::SSL,
   Mail::DKIM, Net::SSLeay, NetAddr::IP, and Socket6.
