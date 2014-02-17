@@ -3,7 +3,7 @@
 Summary:        Email filter with virus scanner and spamassassin support
 Name:           amavisd-new
 Version:        2.8.1
-Release:        1%{?prerelease:.%{prerelease}}%{?dist}
+Release:        2%{?prerelease:.%{prerelease}}%{?dist}
 # LDAP schema is GFDL, some helpers are BSD, core is GPLv2+
 License:        GPLv2+ and BSD and GFDL
 Group:          Applications/System
@@ -147,8 +147,7 @@ install -D -p -m 644 %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/clamd.d/amavisd.co
 install -D -p -m 755 %{SOURCE6} $RPM_BUILD_ROOT%{_sysconfdir}/cron.daily/amavisd
 
 mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/spool/amavisd/{tmp,db,quarantine}
-touch $RPM_BUILD_ROOT%{_localstatedir}/spool/amavisd/clamd.sock
-mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/run/amavisd
+mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/run/{clamd.amavisd,amavisd}
 
 %if 0%{?fedora} > 17
 install -D -m 644 %{SOURCE8} $RPM_BUILD_ROOT%{_tmpfilesdir}/amavisd-new.conf
@@ -197,11 +196,11 @@ exit 0
 %dir %attr(700,amavis,amavis) %{_localstatedir}/spool/amavisd/tmp
 %dir %attr(700,amavis,amavis) %{_localstatedir}/spool/amavisd/db
 %dir %attr(700,amavis,amavis) %{_localstatedir}/spool/amavisd/quarantine
-%ghost %{_localstatedir}/spool/amavisd/clamd.sock
 %if 0%{?fedora} > 17
 %attr(644,root,root) %{_tmpfilesdir}/amavisd-new.conf
 %endif
 %dir %attr(755,amavis,amavis) %{_localstatedir}/run/amavisd
+%dir %attr(770,amavis,clamupdate) %{_localstatedir}/run/clamd.amavisd
 
 %files snmp
 %defattr(-,root,root,-)
@@ -210,6 +209,10 @@ exit 0
 %{_sbindir}/amavisd-snmp-subagent
 
 %changelog
+* Mon Feb 17 2014 Juan Orti Alcaine <jorti@fedoraproject.org> 2.8.1-2
+- Move clamd socket to /var/run/clamd.amavisd
+- Add permissions to clamupdate to notify clamd
+
 * Wed Feb 12 2014 Juan Orti Alcaine <jorti@fedoraproject.org> 2.8.1-1
 - Update to version 2.8.1
 - Add systemd service units
