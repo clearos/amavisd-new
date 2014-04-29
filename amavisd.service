@@ -1,7 +1,7 @@
 [Unit]
 Description=Amavisd-new is an interface between MTA and content checkers.
 Documentation=http://www.ijs.si/software/amavisd/#doc
-After=syslog.target network.target
+After=network.target
 Wants=clamd@amavisd.service
 
 [Service]
@@ -12,6 +12,7 @@ PIDFile=/var/run/amavisd/amavisd.pid
 ExecStart=/usr/sbin/amavisd -c /etc/amavisd/amavisd.conf
 Restart=on-failure
 PrivateTmp=true
+PrivateDevices=true
 NoNewPrivileges=true
 
 [Install]

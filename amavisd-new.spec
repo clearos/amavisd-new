@@ -3,7 +3,7 @@
 Summary:        Email filter with virus scanner and spamassassin support
 Name:           amavisd-new
 Version:        2.8.1
-Release:        2%{?prerelease:.%{prerelease}}%{?dist}
+Release:        3%{?prerelease:.%{prerelease}}%{?dist}
 # LDAP schema is GFDL, some helpers are BSD, core is GPLv2+
 License:        GPLv2+ and BSD and GFDL
 Group:          Applications/System
@@ -12,10 +12,13 @@ Source0:        http://www.ijs.si/software/amavisd/amavisd-new-%{version}%{?prer
 Source2:        amavis-clamd.conf
 Source4:        README.fedora
 Source5:        README.quarantine
-Source6:        amavisd.cron
 Source8:        amavisd-new-tmpfiles.conf
 Source9:        amavisd.service
 Source10:       amavisd-snmp.service
+Source11:       amavisd-clean-tmp.service
+Source12:       amavisd-clean-tmp.timer
+Source13:       amavisd-clean-quarantine.service
+Source14:       amavisd-clean-quarantine.timer
 Patch0:         amavisd-conf.patch
 Patch1:         amavisd-init.patch
 Patch2:         amavisd-condrestart.patch
@@ -29,8 +32,8 @@ BuildArch:      noarch
 BuildRequires:  systemd
 Requires:       clamav-server
 Requires:       clamav-server-systemd
-Requires:       /usr/sbin/tmpwatch, /etc/cron.daily
-Requires:       /usr/bin/ar
+Requires:       tmpwatch
+Requires:       binutils
 Requires:       altermime
 Requires:       arj
 Requires:       bzip2
@@ -141,17 +144,18 @@ install -p -m 755 amavisd-{agent,nanny,release} $RPM_BUILD_ROOT%{_bindir}/
 
 install -D -p -m 644 %{SOURCE9} $RPM_BUILD_ROOT%{_unitdir}/amavisd.service
 install -D -p -m 644 %{SOURCE10} $RPM_BUILD_ROOT%{_unitdir}/amavisd-snmp.service
+install -D -p -m 644 %{SOURCE11} $RPM_BUILD_ROOT%{_unitdir}/amavisd-clean-tmp.service
+install -D -p -m 644 %{SOURCE12} $RPM_BUILD_ROOT%{_unitdir}/amavisd-clean-tmp.timer
+install -D -p -m 644 %{SOURCE13} $RPM_BUILD_ROOT%{_unitdir}/amavisd-clean-quarantine.service
+install -D -p -m 644 %{SOURCE14} $RPM_BUILD_ROOT%{_unitdir}/amavisd-clean-quarantine.timer
 
 install -D -p -m 644 amavisd.conf $RPM_BUILD_ROOT%{_sysconfdir}/amavisd/amavisd.conf
 install -D -p -m 644 %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/clamd.d/amavisd.conf
-install -D -p -m 755 %{SOURCE6} $RPM_BUILD_ROOT%{_sysconfdir}/cron.daily/amavisd
 
 mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/spool/amavisd/{tmp,db,quarantine}
 mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/run/{clamd.amavisd,amavisd}
 
-%if 0%{?fedora} > 17
 install -D -m 644 %{SOURCE8} $RPM_BUILD_ROOT%{_tmpfilesdir}/amavisd-new.conf
-%endif
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -165,18 +169,30 @@ exit 0
 
 %preun
 %systemd_preun amavisd.service
+%systemd_preun amavisd-clean-tmp.service
+%systemd_preun amavisd-clean-tmp.timer
+%systemd_preun amavisd-clean-quarantine.service
+%systemd_preun amavisd-clean-quarantine.timer
 
 %preun snmp
 %systemd_preun amavisd-snmp.service
 
 %post
 %systemd_post amavisd.service
+%systemd_post amavisd-clean-tmp.service
+%systemd_post amavisd-clean-tmp.timer
+%systemd_post amavisd-clean-quarantine.service
+%systemd_post amavisd-clean-quarantine.timer
 
 %post snmp
 %systemd_post amavisd-snmp.service
 
 %postun
 %systemd_postun_with_restart amavisd.service
+%systemd_postun_with_restart amavisd-clean-tmp.service
+%systemd_postun_with_restart amavisd-clean-tmp.timer
+%systemd_postun_with_restart amavisd-clean-quarantine.service
+%systemd_postun_with_restart amavisd-clean-quarantine.timer
 
 %postun snmp
 %systemd_postun_with_restart amavisd-snmp.service
@@ -187,18 +203,19 @@ exit 0
 %doc README_FILES test-messages amavisd.conf-*
 %dir %{_sysconfdir}/amavisd/
 %{_unitdir}/amavisd.service
+%{_unitdir}/amavisd-clean-tmp.service
+%{_unitdir}/amavisd-clean-tmp.timer
+%{_unitdir}/amavisd-clean-quarantine.service
+%{_unitdir}/amavisd-clean-quarantine.timer
 %config(noreplace) %{_sysconfdir}/amavisd/amavisd.conf
 %config(noreplace) %{_sysconfdir}/clamd.d/amavisd.conf
-%config(noreplace) %{_sysconfdir}/cron.daily/amavisd
 %{_sbindir}/amavisd
 %{_bindir}/amavisd-*
 %dir %attr(710,amavis,amavis) %{_localstatedir}/spool/amavisd
 %dir %attr(700,amavis,amavis) %{_localstatedir}/spool/amavisd/tmp
 %dir %attr(700,amavis,amavis) %{_localstatedir}/spool/amavisd/db
 %dir %attr(700,amavis,amavis) %{_localstatedir}/spool/amavisd/quarantine
-%if 0%{?fedora} > 17
-%attr(644,root,root) %{_tmpfilesdir}/amavisd-new.conf
-%endif
+%{_tmpfilesdir}/amavisd-new.conf
 %dir %attr(755,amavis,amavis) %{_localstatedir}/run/amavisd
 %dir %attr(770,amavis,clamupdate) %{_localstatedir}/run/clamd.amavisd
 
@@ -209,6 +226,10 @@ exit 0
 %{_sbindir}/amavisd-snmp-subagent
 
 %changelog
+* Wed Mar 19 2014 Juan Orti Alcaine <jorti@fedoraproject.org> 2.8.1-3
+- Use systemd timer units instead of cronjobs
+- Add PrivateDevices to service unit
+
 * Mon Feb 17 2014 Juan Orti Alcaine <jorti@fedoraproject.org> 2.8.1-2
 - Move clamd socket to /var/run/clamd.amavisd
 - Add permissions to clamupdate to notify clamd

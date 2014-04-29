@@ -1,0 +1,8 @@
+[Unit]
+Description=Clean amavisd tmp folder
+
+[Service]
+Type=oneshot
+User=amavis
+Group=amavis
+ExecStart=/usr/sbin/tmpwatch 24 /var/spool/amavisd/tmp

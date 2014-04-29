@@ -1,0 +1,8 @@
+[Unit]
+Description=Clean amavisd quarantine folder
+
+[Service]
+Type=oneshot
+User=amavis
+Group=amavis
+ExecStart=/usr/sbin/tmpwatch -d 720 /var/spool/amavisd/quarantine
