@@ -2,13 +2,13 @@
 
 Summary:        Email filter with virus scanner and spamassassin support
 Name:           amavisd-new
-Version:        2.8.1
-Release:        3%{?prerelease:.%{prerelease}}%{?dist}
+Version:        2.9.0
+Release:        1%{?prerelease:.%{prerelease}}%{?dist}
 # LDAP schema is GFDL, some helpers are BSD, core is GPLv2+
 License:        GPLv2+ and BSD and GFDL
 Group:          Applications/System
 URL:            http://www.ijs.si/software/amavisd/
-Source0:        http://www.ijs.si/software/amavisd/amavisd-new-%{version}%{?prerelease:-%{prerelease}}.tar.gz
+Source0:        http://www.ijs.si/software/amavisd/amavisd-new-%{version}%{?prerelease:-%{prerelease}}.tar.xz
 Source2:        amavis-clamd.conf
 Source4:        README.fedora
 Source5:        README.quarantine
@@ -19,7 +19,7 @@ Source11:       amavisd-clean-tmp.service
 Source12:       amavisd-clean-tmp.timer
 Source13:       amavisd-clean-quarantine.service
 Source14:       amavisd-clean-quarantine.timer
-Patch0:         amavisd-conf.patch
+Patch0:         amavisd-new-2.9.0-conf.patch
 Patch1:         amavisd-init.patch
 Patch2:         amavisd-condrestart.patch
 # Don't source /etc/sysconfig/network in init script; the network check
@@ -184,6 +184,11 @@ exit 0
 %systemd_post amavisd-clean-quarantine.service
 %systemd_post amavisd-clean-quarantine.timer
 
+systemctl enable amavisd-clean-tmp.timer >/dev/null 2>&1 || :
+systemctl start amavisd-clean-tmp.timer >/dev/null 2>&1 || :
+systemctl enable amavisd-clean-quarantine.timer >/dev/null 2>&1 || :
+systemctl start amavisd-clean-quarantine.timer >/dev/null 2>&1 || :
+
 %post snmp
 %systemd_post amavisd-snmp.service
 
@@ -226,6 +231,11 @@ exit 0
 %{_sbindir}/amavisd-snmp-subagent
 
 %changelog
+* Sun May 11 2014 Juan Orti Alcaine <jorti@fedoraproject.org> 2.9.0-1
+- Update to version 2.9.0
+- Rework amavisd-conf.patch
+- Enable and start timer units
+
 * Wed Mar 19 2014 Juan Orti Alcaine <jorti@fedoraproject.org> 2.8.1-3
 - Use systemd timer units instead of cronjobs
 - Add PrivateDevices to service unit
