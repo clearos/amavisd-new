@@ -3,7 +3,7 @@
 Summary:        Email filter with virus scanner and spamassassin support
 Name:           amavisd-new
 Version:        2.9.0
-Release:        3%{?prerelease:.%{prerelease}}%{?dist}
+Release:        4%{?prerelease:.%{prerelease}}%{?dist}
 # LDAP schema is GFDL, some helpers are BSD, core is GPLv2+
 License:        GPLv2+ and BSD and GFDL
 Group:          Applications/System
@@ -216,10 +216,10 @@ systemctl start amavisd-clean-quarantine.timer >/dev/null 2>&1 || :
 %config(noreplace) %{_sysconfdir}/clamd.d/amavisd.conf
 %{_sbindir}/amavisd
 %{_bindir}/amavisd-*
-%dir %attr(710,amavis,amavis) %{_localstatedir}/spool/amavisd
-%dir %attr(700,amavis,amavis) %{_localstatedir}/spool/amavisd/tmp
-%dir %attr(700,amavis,amavis) %{_localstatedir}/spool/amavisd/db
-%dir %attr(700,amavis,amavis) %{_localstatedir}/spool/amavisd/quarantine
+%dir %attr(750,amavis,amavis) %{_localstatedir}/spool/amavisd
+%dir %attr(750,amavis,amavis) %{_localstatedir}/spool/amavisd/tmp
+%dir %attr(750,amavis,amavis) %{_localstatedir}/spool/amavisd/db
+%dir %attr(750,amavis,amavis) %{_localstatedir}/spool/amavisd/quarantine
 %{_tmpfilesdir}/amavisd-new.conf
 %dir %attr(755,amavis,amavis) %{_localstatedir}/run/amavisd
 %dir %attr(770,amavis,clamupdate) %{_localstatedir}/run/clamd.amavisd
@@ -231,6 +231,9 @@ systemctl start amavisd-clean-quarantine.timer >/dev/null 2>&1 || :
 %{_sbindir}/amavisd-snmp-subagent
 
 %changelog
+* Fri Jun 27 2014 Juan Orti Alcaine <jorti@fedoraproject.org> 2.9.0-4
+- Change permissions of /var/spool/amavisd folders to 750. Fix bug #906396
+
 * Sat Jun 07 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.9.0-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_21_Mass_Rebuild
 
