@@ -2,8 +2,8 @@
 
 Summary:        Email filter with virus scanner and spamassassin support
 Name:           amavisd-new
-Version:        2.9.0
-Release:        4%{?prerelease:.%{prerelease}}%{?dist}
+Version:        2.9.1
+Release:        1%{?prerelease:.%{prerelease}}%{?dist}
 # LDAP schema is GFDL, some helpers are BSD, core is GPLv2+
 License:        GPLv2+ and BSD and GFDL
 Group:          Applications/System
@@ -231,6 +231,9 @@ systemctl start amavisd-clean-quarantine.timer >/dev/null 2>&1 || :
 %{_sbindir}/amavisd-snmp-subagent
 
 %changelog
+* Sat Jun 28 2014 Juan Orti Alcaine <jorti@fedoraproject.org> 2.9.1-1
+- New version 2.9.1
+
 * Fri Jun 27 2014 Juan Orti Alcaine <jorti@fedoraproject.org> 2.9.0-4
 - Change permissions of /var/spool/amavisd folders to 750. Fix bug #906396
 
