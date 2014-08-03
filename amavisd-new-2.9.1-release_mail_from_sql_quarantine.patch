@@ -1,0 +1,51 @@
+diff --git a/amavisd b/amavisd
+index f721756..2a2c418 100755
+--- a/amavisd
++++ b/amavisd
+@@ -20208,7 +20208,7 @@ sub preprocess_policy_query($$) {
+     new_am_id('rel-'.$msginfo->mail_id)  if $releasing;
+     if ($releasing && $quar_type eq 'Q') {  # releasing from SQL
+       do_log(5, "preprocess_policy_query: opening in sql: %s",
+-                $msginfo->mail_id);
++                $msginfo->parent_mail_id);
+       my $obj = $Amavis::sql_storage;
+       $Amavis::extra_code_sql_quar && $obj
+         or die "SQL quarantine code not enabled (3)";
+@@ -20218,31 +20218,31 @@ sub preprocess_policy_query($$) {
+       if (!defined($msginfo->partition_tag) &&
+           defined($sel_msg) && $sel_msg ne '') {
+         do_log(5, "preprocess_policy_query: missing partition_tag in request,".
+-                  " fetching msgs record for mail_id=%s", $msginfo->mail_id);
++                  " fetching msgs record for mail_id=%s", $msginfo->parent_mail_id);
+         # find a corresponding partition_tag if missing from a release request
+         $conn_h->begin_work_nontransaction;  #(re)connect if necessary
+-        $conn_h->execute($sel_msg, untaint($msginfo->mail_id));
++        $conn_h->execute($sel_msg, untaint($msginfo->parent_mail_id));
+         my $a_ref; my $cnt = 0; my $partition_tag;
+         while ( defined($a_ref=$conn_h->fetchrow_arrayref($sel_msg)) ) {
+           $cnt++;
+           $partition_tag = $a_ref->[0]  if !defined $partition_tag;
+           ll(5) && do_log(5, "release: got msgs record for mail_id=%s: %s",
+-                             $msginfo->mail_id, join(', ',@$a_ref));
++                             $msginfo->parent_mail_id, join(', ',@$a_ref));
+         }
+         $conn_h->finish($sel_msg)  if defined $a_ref;  # only if not all read
+         $cnt <= 1 or die "Multiple ($cnt) records with same mail_id exist, ".
+                          "specify a partition_tag in the AM.PDP request";
+         if ($cnt < 1) {
+           do_log(0, "release: no records with msgs.mail_id=%s in a database, ".
+-                    "trying to read from a quar. anyway", $msginfo->mail_id);
++                    "trying to read from a quar. anyway", $msginfo->parent_mail_id);
+         }
+         $msginfo->partition_tag($partition_tag);  # could still be undef/NULL !
+       }
+       ll(5) && do_log(5, "release: opening mail_id=%s, partition_tag=%s",
+-                         $msginfo->mail_id, $msginfo->partition_tag);
++                         $msginfo->parent_mail_id, $msginfo->partition_tag);
+       $conn_h->begin_work_nontransaction;  # (re)connect if not connected
+       $fh = Amavis::IO::SQL->new;
+-      $fh->open($conn_h, $sel_quar, untaint($msginfo->mail_id),
++      $fh->open($conn_h, $sel_quar, untaint($msginfo->parent_mail_id),
+                 'r', untaint($msginfo->partition_tag))
+         or die "Can't open sql obj for reading: $!";  1;
+     } else {  # mail checking or releasing from a file

@@ -3,7 +3,7 @@
 Summary:        Email filter with virus scanner and spamassassin support
 Name:           amavisd-new
 Version:        2.9.1
-Release:        1%{?prerelease:.%{prerelease}}%{?dist}
+Release:        2%{?prerelease:.%{prerelease}}%{?dist}
 # LDAP schema is GFDL, some helpers are BSD, core is GPLv2+
 License:        GPLv2+ and BSD and GFDL
 Group:          Applications/System
@@ -27,6 +27,9 @@ Patch2:         amavisd-condrestart.patch
 # and it can't be relied upon to exist in recent Fedora builds. Mail
 # sent upstream to amavis-users ML 2013-05-10. -adamw
 Patch3:         amavisd-new-2.8.0-init_network.patch
+# Fix bug #1121552
+# http://lists.amavis.org/pipermail/amavis-users/2014-June/002957.html
+Patch4:         amavisd-new-2.9.1-release_mail_from_sql_quarantine.patch
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:      noarch
 BuildRequires:  systemd
@@ -127,6 +130,7 @@ alerting purposes.
 %patch1 -p1
 %patch2 -p0
 %patch3 -p1
+%patch4 -p1
 
 install -p -m 644 %{SOURCE4} %{SOURCE5} README_FILES/
 sed -e 's,/var/amavis/amavisd.sock\>,%{_localstatedir}/spool/amavisd/amavisd.sock,' -i amavisd-release
@@ -231,6 +235,9 @@ systemctl start amavisd-clean-quarantine.timer >/dev/null 2>&1 || :
 %{_sbindir}/amavisd-snmp-subagent
 
 %changelog
+* Sun Aug 03 2014 Juan Orti Alcaine <jorti@fedoraproject.org> 2.9.1-2
+- Add patch to fix releasing mail from sql quarantine
+
 * Sat Jun 28 2014 Juan Orti Alcaine <jorti@fedoraproject.org> 2.9.1-1
 - New version 2.9.1
 
