@@ -12,7 +12,6 @@ PIDFile=/var/run/amavisd/amavisd.pid
 ExecStart=/usr/sbin/amavisd -c /etc/amavisd/amavisd.conf
 Restart=on-failure
 PrivateTmp=true
-PrivateDevices=true
 NoNewPrivileges=true
 
 [Install]
