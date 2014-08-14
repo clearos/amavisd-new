@@ -3,7 +3,7 @@
 Summary:        Email filter with virus scanner and spamassassin support
 Name:           amavisd-new
 Version:        2.9.1
-Release:        3%{?prerelease:.%{prerelease}}%{?dist}
+Release:        4%{?prerelease:.%{prerelease}}%{?dist}
 # LDAP schema is GFDL, some helpers are BSD, core is GPLv2+
 License:        GPLv2+ and BSD and GFDL
 Group:          Applications/System
@@ -235,6 +235,9 @@ systemctl start amavisd-clean-quarantine.timer >/dev/null 2>&1 || :
 %{_sbindir}/amavisd-snmp-subagent
 
 %changelog
+* Thu Aug 14 2014 Juan Orti Alcaine <jorti@fedoraproject.org> 2.9.1-4
+- Remove PrivateDevices and PrivateNetwork from all services
+
 * Thu Aug 14 2014 Juan Orti Alcaine <jorti@fedoraproject.org> 2.9.1-3
 - Remove PrivateDevices from service unit. Fix #1130147.
 
