@@ -1,8 +1,8 @@
-commit 44707666dd30b5196e75002f1661da6b77e360f8
-Author: Juan Orti Alcaine <j.orti.alcaine@gmail.com>
-Date:   Mon May 12 09:59:27 2014 +0200
+commit f7532ce0714440ed6649a7794eb97c9f6191789e
+Author: Juan Orti Alcaine <juan.orti@miceliux.com>
+Date:   Mon Oct 20 10:15:29 2014 +0200
 
-    amavisd-conf.patch
+    amavisd-new-2.10.0-conf.patch
 
 diff --git a/amavisd-agent b/amavisd-agent
 index 1ebe2bb..b8271a3 100755
@@ -31,7 +31,7 @@ index 80b84dc..164549f 100755
  my($repeatcount);     # -c, repeat count (when defined)
  
 diff --git a/amavisd.conf b/amavisd.conf
-index a09597f..25db750 100644
+index d023e10..eecd17d 100644
 --- a/amavisd.conf
 +++ b/amavisd.conf
 @@ -14,25 +14,25 @@ use strict;
@@ -98,7 +98,7 @@ index a09597f..25db750 100644
  # $bad_header_quarantine_method = undef;
  
  # $os_fingerprint_method = 'p0f:*:2345';  # to query p0f-analyzer.pl
-@@ -338,9 +338,9 @@ $banned_filename_re = new_RE(
+@@ -339,9 +339,9 @@ $banned_filename_re = new_RE(
    ['arj',  \&do_unarj, ['unarj', 'arj'] ],
    ['arc',  \&do_arc,   ['nomarch', 'arc'] ],
    ['zoo',  \&do_zoo,   ['zoo', 'unzoo'] ],
@@ -110,7 +110,7 @@ index a09597f..25db750 100644
    ['tnef', \&do_tnef],
  # ['lha',  \&do_lha,   'lha'],  # not safe, use 7z instead
  # ['sit',  \&do_unstuff, 'unstuff'],  # not safe
-@@ -378,16 +378,16 @@ $banned_filename_re = new_RE(
+@@ -379,16 +379,16 @@ $banned_filename_re = new_RE(
  #   qr/^(?:310|420)[,\s]*(?:.* <<< )?(.+?)(?: ; |$)/m ],
  # settings for the SAVAPI3.conf: ArchiveScan=1, HeurLevel=2, MailboxScan=1
  
