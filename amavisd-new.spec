@@ -1,9 +1,9 @@
-%global prerelease rc2
+#%%global prerelease rc2
 
 Summary:        Email filter with virus scanner and spamassassin support
 Name:           amavisd-new
 Version:        2.10.0
-Release:        0.1%{?prerelease:.%{prerelease}}%{?dist}
+Release:        1%{?prerelease:.%{prerelease}}%{?dist}
 # LDAP schema is GFDL, some helpers are BSD, core is GPLv2+
 License:        GPLv2+ and BSD and GFDL
 Group:          Applications/System
@@ -19,6 +19,8 @@ Source11:       amavisd-clean-tmp.service
 Source12:       amavisd-clean-tmp.timer
 Source13:       amavisd-clean-quarantine.service
 Source14:       amavisd-clean-quarantine.timer
+Source15:       amavis-mc.service
+Source16:       amavisd-snmp-zmq.service
 Patch0:         amavisd-new-2.10.0-conf.patch
 Patch1:         amavisd-init.patch
 Patch2:         amavisd-condrestart.patch
@@ -51,19 +53,23 @@ Requires:       unzoo
 # We probably should parse the fetch_modules() code in amavisd for this list.
 # These are just the dependencies that don't get picked up otherwise.
 Requires:       perl(Archive::Tar)
-Requires:       perl(Archive::Zip)
+Requires:       perl(Archive::Zip) >= 1.14
 Requires:       perl(Authen::SASL)
 Requires:       perl(Compress::Zlib) >= 1.35
+Requires:       perl(Compress::Raw::Zlib) >= 2.017
 Requires:       perl(Convert::TNEF)
 Requires:       perl(Convert::UUlib)
 Requires:       perl(Crypt::OpenSSL::RSA)
 Requires:       perl(DBD::SQLite)
 Requires:       perl(DBI)
+Requires:       perl(Digest::MD5) >= 2.22
 Requires:       perl(Digest::SHA)
 Requires:       perl(Digest::SHA1)
-Requires:       perl(IO::Socket::INET6)
+Requires:       perl(File::LibMagic)
+Requires:       perl(IO::Socket::IP)
 Requires:       perl(IO::Socket::SSL)
 Requires:       perl(IO::Stringy)
+Requires:       perl(MIME::Base64)
 Requires:       perl(MIME::Body)
 Requires:       perl(MIME::Decoder::Base64)
 Requires:       perl(MIME::Decoder::Binary)
@@ -72,19 +78,22 @@ Requires:       perl(MIME::Decoder::NBit)
 Requires:       perl(MIME::Decoder::QuotedPrint)
 Requires:       perl(MIME::Decoder::UU)
 Requires:       perl(MIME::Head)
-Requires:       perl(Mail::DKIM)
+Requires:       perl(MIME::Parser)
+Requires:       perl(Mail::DKIM) >= 0.31
 Requires:       perl(Mail::Field)
 Requires:       perl(Mail::Header)
-Requires:       perl(Mail::Internet)
+Requires:       perl(Mail::Internet) >= 1.58
 Requires:       perl(Mail::SPF)
 Requires:       perl(Mail::SpamAssassin)
 Requires:       perl(Net::DNS)
 Requires:       perl(Net::LDAP)
+Requires:       perl(Net::LibIDN)
 Requires:       perl(Net::SSLeay)
-Requires:       perl(Net::Server)
+Requires:       perl(Net::Server) >= 2.0
 Requires:       perl(NetAddr::IP)
 Requires:       perl(Razor2::Client::Version)
 Requires:       perl(Socket6)
+Requires:       perl(Time::HiRes) >= 1.49
 Requires:       perl(Unix::Syslog)
 Requires:       perl(URI)
 Requires(pre):  shadow-utils
@@ -96,6 +105,25 @@ Requires(postun): systemd
 Group:          Applications/System
 Summary:        Exports amavisd SNMP data
 Requires:       %{name} = %{version}-%{release}
+Requires:       perl(NetSNMP::OID)
+Requires(post): systemd
+Requires(preun): systemd
+Requires(postun): systemd
+
+%package zeromq
+Group:          Applications/System
+Summary:        Support for communicating through 0MQ sockets
+Requires:       %{name} = %{version}-%{release}
+Requires:       perl(ZMQ::Constants)
+Requires:       perl(ZMQ::LibZMQ3)
+Requires(post): systemd
+Requires(preun): systemd
+Requires(postun): systemd
+
+%package snmp-zeromq
+Group:          Applications/System
+Summary:        Exports amavisd SNMP data and communicates through 0MQ sockets
+Requires:       %{name}-zeromq = %{version}-%{release}
 Requires:       perl(NetSNMP::OID)
 Requires(post): systemd
 Requires(preun): systemd
@@ -121,6 +149,22 @@ exports data to a SNMP server running on a host (same or remote), making
 them available to SNMP clients (such a Cacti or mrtg) for monitoring or
 alerting purposes.
 
+%description zeromq
+This package adds support for monitoring and communicating with amavisd
+and auxiliary services among themselves through 0MQ sockets (also called ZMQ
+or ZeroMQ, or Crossroads I/O or XS). This method offers similar features
+as current services amavisd-nanny, amavisd-agent and amavisd-snmp-subagent,
+but use message passing paradigm instead of communicating through a shared
+Berkeley database. This avoids locking contention, so the gain can be
+significant for a busy amavisd setup with lots of child processes.
+
+%description snmp-zeromq
+This package contains the program amavisd-snmp-subagent-zmq, which can be
+used as a SNMP AgentX, exporting amavisd statistical counters database
+(snmp.db) as well as a child process status database (nanny.db) to a
+SNMP daemon supporting the AgentX protocol (RFC 2741), such as NET-SNMP.
+It supports communicating through 0MQ sockets.
+
 %prep
 %setup -q -n %{name}-%{version}%{?prerelease:-%{prerelease}}
 %patch0 -p1
@@ -138,9 +182,12 @@ rm -rf $RPM_BUILD_ROOT
 
 install -D -p -m 755 amavisd $RPM_BUILD_ROOT%{_sbindir}/amavisd
 install -D -p -m 755 amavisd-snmp-subagent $RPM_BUILD_ROOT%{_sbindir}/amavisd-snmp-subagent
+install -D -p -m 755 amavisd-snmp-subagent-zmq $RPM_BUILD_ROOT%{_sbindir}/amavisd-snmp-subagent-zmq
 
 mkdir -p $RPM_BUILD_ROOT%{_bindir}
-install -p -m 755 amavisd-{agent,nanny,release} $RPM_BUILD_ROOT%{_bindir}/
+install -p -m 755 amavisd-{agent,nanny,release,signer,status,submit} $RPM_BUILD_ROOT%{_bindir}/
+install -p -m 755 amavis-mc $RPM_BUILD_ROOT%{_sbindir}/
+install -p -m 755 amavis-services $RPM_BUILD_ROOT%{_bindir}/
 
 install -D -p -m 644 %{SOURCE9} $RPM_BUILD_ROOT%{_unitdir}/amavisd.service
 install -D -p -m 644 %{SOURCE10} $RPM_BUILD_ROOT%{_unitdir}/amavisd-snmp.service
@@ -148,6 +195,8 @@ install -D -p -m 644 %{SOURCE11} $RPM_BUILD_ROOT%{_unitdir}/amavisd-clean-tmp.se
 install -D -p -m 644 %{SOURCE12} $RPM_BUILD_ROOT%{_unitdir}/amavisd-clean-tmp.timer
 install -D -p -m 644 %{SOURCE13} $RPM_BUILD_ROOT%{_unitdir}/amavisd-clean-quarantine.service
 install -D -p -m 644 %{SOURCE14} $RPM_BUILD_ROOT%{_unitdir}/amavisd-clean-quarantine.timer
+install -D -p -m 644 %{SOURCE15} $RPM_BUILD_ROOT%{_unitdir}/amavis-mc.service
+install -D -p -m 644 %{SOURCE16} $RPM_BUILD_ROOT%{_unitdir}/amavisd-snmp-zmq.service
 
 install -D -p -m 644 amavisd.conf $RPM_BUILD_ROOT%{_sysconfdir}/amavisd/amavisd.conf
 install -D -p -m 644 %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/clamd.d/amavisd.conf
@@ -177,6 +226,12 @@ exit 0
 %preun snmp
 %systemd_preun amavisd-snmp.service
 
+%preun zeromq
+%systemd_preun amavis-mc.service
+
+%preun snmp-zeromq
+%systemd_preun amavisd-snmp-zmq.service
+
 %post
 %systemd_post amavisd.service
 %systemd_post amavisd-clean-tmp.service
@@ -192,6 +247,12 @@ systemctl start amavisd-clean-quarantine.timer >/dev/null 2>&1 || :
 %post snmp
 %systemd_post amavisd-snmp.service
 
+%post zeromq
+%systemd_post amavis-mc.service
+
+%post snmp-zeromq
+%systemd_post amavisd-snmp-zmq.service
+
 %postun
 %systemd_postun_with_restart amavisd.service
 %systemd_postun_with_restart amavisd-clean-tmp.service
@@ -202,10 +263,16 @@ systemctl start amavisd-clean-quarantine.timer >/dev/null 2>&1 || :
 %postun snmp
 %systemd_postun_with_restart amavisd-snmp.service
 
+%postun zeromq
+%systemd_postun_with_restart amavis-mc.service
+
+%postun snmp-zeromq
+%systemd_postun_with_restart amavisd-snmp-zmq.service
+
 %files
 %defattr(-,root,root,-)
-%doc AAAREADME.first LDAP.schema LDAP.ldif LICENSE RELEASE_NOTES
-%doc README_FILES test-messages amavisd.conf-*
+%doc AAAREADME.first LDAP.schema LDAP.ldif LICENSE RELEASE_NOTES TODO INSTALL
+%doc README_FILES test-messages amavisd.conf-* amavisd-custom.conf
 %dir %{_sysconfdir}/amavisd/
 %{_unitdir}/amavisd.service
 %{_unitdir}/amavisd-clean-tmp.service
@@ -215,7 +282,11 @@ systemctl start amavisd-clean-quarantine.timer >/dev/null 2>&1 || :
 %config(noreplace) %{_sysconfdir}/amavisd/amavisd.conf
 %config(noreplace) %{_sysconfdir}/clamd.d/amavisd.conf
 %{_sbindir}/amavisd
-%{_bindir}/amavisd-*
+%{_bindir}/amavisd-agent
+%{_bindir}/amavisd-nanny
+%{_bindir}/amavisd-release
+%{_bindir}/amavisd-signer
+%{_bindir}/amavisd-submit
 %dir %attr(750,amavis,amavis) %{_localstatedir}/spool/amavisd
 %dir %attr(750,amavis,amavis) %{_localstatedir}/spool/amavisd/tmp
 %dir %attr(750,amavis,amavis) %{_localstatedir}/spool/amavisd/db
@@ -230,7 +301,23 @@ systemctl start amavisd-clean-quarantine.timer >/dev/null 2>&1 || :
 %{_unitdir}/amavisd-snmp.service
 %{_sbindir}/amavisd-snmp-subagent
 
+%files zeromq
+%{_unitdir}/amavis-mc.service
+%{_sbindir}/amavis-mc
+%{_bindir}/amavisd-status
+%{_bindir}/amavis-services
+
+%files snmp-zeromq
+%{_unitdir}/amavisd-snmp-zmq.service
+%{_sbindir}/amavisd-snmp-subagent-zmq
+
 %changelog
+* Thu Oct 23 2014 Juan Orti Alcaine <jorti@fedoraproject.org> 2.10.0-1
+- Update to 2.10.0
+- Replace IO::Socket::INET6 with IO::Socket::IP
+- Review perl dependencies minimum version
+- Add subpackages amavisd-new-zeromq and amavisd-new-snmp-zeromq
+
 * Mon Oct 20 2014 Juan Orti Alcaine <jorti@fedoraproject.org> 2.10.0-0.1.rc2
 - Update to 2.10.0-rc2
 
