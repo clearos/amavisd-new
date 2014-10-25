@@ -1,6 +1,46 @@
-commit f7532ce0714440ed6649a7794eb97c9f6191789e
+commit 45e7e93efb71dfe3d1f1ca93636c592e17689b09
 Author: Juan Orti Alcaine <juan.orti@miceliux.com>
-Date:   Mon Oct 20 10:15:29 2014 +0200
+Date:   Sat Oct 25 22:48:40 2014 +0200
+
+    Fix running user in amavis-mc and amavisd-signer
+
+diff --git a/amavis-mc b/amavis-mc
+index 88d9701..f6f8081 100755
+--- a/amavis-mc
++++ b/amavis-mc
+@@ -70,10 +70,10 @@ use vars qw(@path @services $daemon_user $daemon_group $pid_file $log_level
+ 
+ ### USER CONFIGURABLE:
+ 
+-$daemon_user  = 'vscan';
+-$daemon_group = 'vscan';
++$daemon_user  = 'amavis';
++$daemon_group = 'amavis';
+ 
+-$pid_file = '/var/amavis/amavis-mc.pid';
++$pid_file = '/var/run/amavisd/amavis-mc.pid';
+ 
+ $log_level = 0;
+ $syslog_ident = 'amavis-mc';
+diff --git a/amavisd-signer b/amavisd-signer
+index f154646..3042b7c 100755
+--- a/amavisd-signer
++++ b/amavisd-signer
+@@ -86,8 +86,8 @@ $VERSION = 1.001;  # 20100730
+ # Please adjust the following settings as necessary:
+ #
+ 
+-$daemon_user  = 'vscan';
+-$daemon_group = 'vscan';
++$daemon_user  = 'amavis';
++$daemon_group = 'amavis';
+ # $daemon_chroot_dir = '/var/amavis';   # chroot directory or undef
+ 
+ # $daemonize = 1;
+
+commit 587b25f96031ab8ef4d8eab78065c2fa2a469df9
+Author: Juan Orti Alcaine <juan.orti@miceliux.com>
+Date:   Sat Oct 25 22:44:00 2014 +0200
 
     amavisd-new-2.10.0-conf.patch
 

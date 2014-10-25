@@ -3,7 +3,7 @@
 Summary:        Email filter with virus scanner and spamassassin support
 Name:           amavisd-new
 Version:        2.10.0
-Release:        1%{?prerelease:.%{prerelease}}%{?dist}
+Release:        2%{?prerelease:.%{prerelease}}%{?dist}
 # LDAP schema is GFDL, some helpers are BSD, core is GPLv2+
 License:        GPLv2+ and BSD and GFDL
 Group:          Applications/System
@@ -29,6 +29,8 @@ Patch2:         amavisd-condrestart.patch
 # and it can't be relied upon to exist in recent Fedora builds. Mail
 # sent upstream to amavis-users ML 2013-05-10. -adamw
 Patch3:         amavisd-new-2.8.0-init_network.patch
+# Patch5: http://lists.amavis.org/pipermail/amavis-users/2014-October/003259.html
+Patch5:         amavisd-new-2.10.0-missing_import_when_sql_is_in_use.patch
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:      noarch
 BuildRequires:  systemd
@@ -171,6 +173,7 @@ It supports communicating through 0MQ sockets.
 %patch1 -p1
 %patch2 -p0
 %patch3 -p1
+%patch5 -p1
 
 install -p -m 644 %{SOURCE4} %{SOURCE5} README_FILES/
 sed -e 's,/var/amavis/amavisd.sock\>,%{_localstatedir}/spool/amavisd/amavisd.sock,' -i amavisd-release
@@ -312,6 +315,10 @@ systemctl start amavisd-clean-quarantine.timer >/dev/null 2>&1 || :
 %{_sbindir}/amavisd-snmp-subagent-zmq
 
 %changelog
+* Sat Oct 25 2014 Juan Orti Alcaine <jorti@fedoraproject.org> 2.10.0-2
+- Improve conf patch to fix amavis-mc daemon
+- Add patch to fix imports when SQL is used
+
 * Thu Oct 23 2014 Juan Orti Alcaine <jorti@fedoraproject.org> 2.10.0-1
 - Update to 2.10.0
 - Replace IO::Socket::INET6 with IO::Socket::IP
