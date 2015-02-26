@@ -3,7 +3,7 @@
 Summary:        Email filter with virus scanner and spamassassin support
 Name:           amavisd-new
 Version:        2.10.1
-Release:        1%{?prerelease:.%{prerelease}}%{?dist}
+Release:        2%{?prerelease:.%{prerelease}}%{?dist}
 # LDAP schema is GFDL, some helpers are BSD, core is GPLv2+
 License:        GPLv2+ and BSD and GFDL
 Group:          Applications/System
@@ -40,7 +40,7 @@ Requires:       altermime
 Requires:       arj
 Requires:       bzip2
 Requires:       cabextract
-Requires:       cpio
+Requires:       pax
 Requires:       file
 Requires:       freeze
 Requires:       gzip
@@ -312,6 +312,9 @@ systemctl start amavisd-clean-quarantine.timer >/dev/null 2>&1 || :
 %{_sbindir}/amavisd-snmp-subagent-zmq
 
 %changelog
+* Thu Feb 26 2015 Robert Scheck <robert@fedoraproject.org> 2.10.1-1
+- Replaced requirement to cpio by pax (upstream recommendation)
+
 * Mon Oct 27 2014 Juan Orti Alcaine <jorti@fedoraproject.org> 2.10.1-1
 - Update to 2.10.1
 - Patch5 merged upstream
