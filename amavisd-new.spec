@@ -3,7 +3,7 @@
 Summary:        Email filter with virus scanner and spamassassin support
 Name:           amavisd-new
 Version:        2.10.1
-Release:        2%{?prerelease:.%{prerelease}}%{?dist}
+Release:        3%{?prerelease:.%{prerelease}}%{?dist}
 # LDAP schema is GFDL, some helpers are BSD, core is GPLv2+
 License:        GPLv2+ and BSD and GFDL
 Group:          Applications/System
@@ -271,8 +271,9 @@ systemctl start amavisd-clean-quarantine.timer >/dev/null 2>&1 || :
 
 %files
 %defattr(-,root,root,-)
-%doc AAAREADME.first LDAP.schema LDAP.ldif LICENSE RELEASE_NOTES TODO INSTALL
+%doc AAAREADME.first LDAP.schema LDAP.ldif RELEASE_NOTES TODO INSTALL
 %doc README_FILES test-messages amavisd.conf-* amavisd-custom.conf
+%license LICENSE
 %dir %{_sysconfdir}/amavisd/
 %{_unitdir}/amavisd.service
 %{_unitdir}/amavisd-clean-tmp.service
@@ -312,7 +313,10 @@ systemctl start amavisd-clean-quarantine.timer >/dev/null 2>&1 || :
 %{_sbindir}/amavisd-snmp-subagent-zmq
 
 %changelog
-* Thu Feb 26 2015 Robert Scheck <robert@fedoraproject.org> 2.10.1-1
+* Thu Apr 09 2015 Juan Orti Alcaine <jorti@fedoraproject.org> 2.10.1-3
+- Use license macro
+
+* Thu Feb 26 2015 Robert Scheck <robert@fedoraproject.org> 2.10.1-2
 - Replaced requirement to cpio by pax (upstream recommendation)
 
 * Mon Oct 27 2014 Juan Orti Alcaine <jorti@fedoraproject.org> 2.10.1-1
