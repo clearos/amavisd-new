@@ -3,7 +3,7 @@
 Summary:        Email filter with virus scanner and spamassassin support
 Name:           amavisd-new
 Version:        2.10.1
-Release:        3%{?prerelease:.%{prerelease}}%{?dist}
+Release:        4%{?prerelease:.%{prerelease}}%{?dist}
 # LDAP schema is GFDL, some helpers are BSD, core is GPLv2+
 License:        GPLv2+ and BSD and GFDL
 Group:          Applications/System
@@ -21,7 +21,7 @@ Source13:       amavisd-clean-quarantine.service
 Source14:       amavisd-clean-quarantine.timer
 Source15:       amavis-mc.service
 Source16:       amavisd-snmp-zmq.service
-Patch0:         amavisd-new-2.10.0-conf.patch
+Patch0:         amavisd-new-2.10.1-conf.patch
 Patch1:         amavisd-init.patch
 Patch2:         amavisd-condrestart.patch
 # Don't source /etc/sysconfig/network in init script; the network check
@@ -313,6 +313,9 @@ systemctl start amavisd-clean-quarantine.timer >/dev/null 2>&1 || :
 %{_sbindir}/amavisd-snmp-subagent-zmq
 
 %changelog
+* Mon Apr 27 2015 Juan Orti Alcaine <jorti@fedoraproject.org> 2.10.1-4
+- Move amavisd socket to /var/run/amavisd
+
 * Thu Apr 09 2015 Juan Orti Alcaine <jorti@fedoraproject.org> 2.10.1-3
 - Use license macro
 
