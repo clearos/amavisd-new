@@ -275,6 +275,7 @@ systemctl start amavisd-clean-quarantine.timer >/dev/null 2>&1 || :
 %doc AAAREADME.first LDAP.schema LDAP.ldif RELEASE_NOTES TODO INSTALL
 %doc README_FILES test-messages amavisd.conf-* amavisd-custom.conf
 %license LICENSE
+%dir %{_sysconfdir}/amavisd/
 %{_unitdir}/amavisd.service
 %{_unitdir}/amavisd-clean-tmp.service
 %{_unitdir}/amavisd-clean-tmp.timer
