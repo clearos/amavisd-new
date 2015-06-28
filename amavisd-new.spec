@@ -9,6 +9,7 @@ License:        GPLv2+ and BSD and GFDL
 Group:          Applications/System
 URL:            http://www.ijs.si/software/amavisd/
 Source0:        http://www.ijs.si/software/amavisd/amavisd-new-%{version}%{?prerelease:-%{prerelease}}.tar.xz
+Source1:        amavisd.conf
 Source2:        amavis-clamd.conf
 Source4:        README.fedora
 Source5:        README.quarantine
@@ -32,8 +33,6 @@ Patch3:         amavisd-new-2.8.0-init_network.patch
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:      noarch
 BuildRequires:  systemd
-Requires:       clamav-server
-Requires:       clamav-server-systemd
 Requires:       tmpwatch
 Requires:       binutils
 Requires:       altermime
@@ -67,6 +66,7 @@ Requires:       perl(Digest::SHA)
 Requires:       perl(Digest::SHA1)
 Requires:       perl(File::LibMagic)
 Requires:       perl(IO::Socket::IP)
+Requires:       perl(IO::Socket::INET6)
 Requires:       perl(IO::Socket::SSL)
 Requires:       perl(IO::Stringy)
 Requires:       perl(MIME::Base64)
@@ -173,7 +173,7 @@ It supports communicating through 0MQ sockets.
 %patch3 -p1
 
 install -p -m 644 %{SOURCE4} %{SOURCE5} README_FILES/
-sed -e 's,/var/amavis/amavisd.sock\>,%{_localstatedir}/spool/amavisd/amavisd.sock,' -i amavisd-release
+sed -e 's,/var/amavis/amavisd.sock\>,%{_localstatedir}/lib/amavis/amavisd.sock,' -i amavisd-release
 
 %build
 
@@ -198,11 +198,10 @@ install -D -p -m 644 %{SOURCE14} $RPM_BUILD_ROOT%{_unitdir}/amavisd-clean-quaran
 install -D -p -m 644 %{SOURCE15} $RPM_BUILD_ROOT%{_unitdir}/amavis-mc.service
 install -D -p -m 644 %{SOURCE16} $RPM_BUILD_ROOT%{_unitdir}/amavisd-snmp-zmq.service
 
-install -D -p -m 644 amavisd.conf $RPM_BUILD_ROOT%{_sysconfdir}/amavisd/amavisd.conf
-install -D -p -m 644 %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/clamd.d/amavisd.conf
+install -D -p -m 644 %{SOURCE1} $RPM_BUILD_ROOT%{_sysconfdir}/amavisd.conf
 
-mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/spool/amavisd/{tmp,db,quarantine}
-mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/run/{clamd.amavisd,amavisd}
+mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/lib/amavis/{tmp,db,quarantine,var}
+mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/run/amavisd
 
 install -D -m 644 %{SOURCE8} $RPM_BUILD_ROOT%{_tmpfilesdir}/amavisd-new.conf
 
@@ -212,7 +211,7 @@ rm -rf $RPM_BUILD_ROOT
 %pre
 getent group amavis > /dev/null || %{_sbindir}/groupadd -r amavis
 getent passwd amavis > /dev/null || \
-  %{_sbindir}/useradd -r -g amavis -d %{_localstatedir}/spool/amavisd -s /sbin/nologin \
+  %{_sbindir}/useradd -r -g amavis -d %{_localstatedir}/lib/amavis -s /sbin/nologin \
   -c "User for amavisd-new" amavis
 exit 0
 
@@ -279,21 +278,20 @@ systemctl start amavisd-clean-quarantine.timer >/dev/null 2>&1 || :
 %{_unitdir}/amavisd-clean-tmp.timer
 %{_unitdir}/amavisd-clean-quarantine.service
 %{_unitdir}/amavisd-clean-quarantine.timer
-%config(noreplace) %{_sysconfdir}/amavisd/amavisd.conf
-%config(noreplace) %{_sysconfdir}/clamd.d/amavisd.conf
+%config(noreplace) %{_sysconfdir}/amavisd.conf
 %{_sbindir}/amavisd
 %{_bindir}/amavisd-agent
 %{_bindir}/amavisd-nanny
 %{_bindir}/amavisd-release
 %{_bindir}/amavisd-signer
 %{_bindir}/amavisd-submit
-%dir %attr(750,amavis,amavis) %{_localstatedir}/spool/amavisd
-%dir %attr(750,amavis,amavis) %{_localstatedir}/spool/amavisd/tmp
-%dir %attr(750,amavis,amavis) %{_localstatedir}/spool/amavisd/db
-%dir %attr(750,amavis,amavis) %{_localstatedir}/spool/amavisd/quarantine
+%dir %attr(770,amavis,amavis) %{_localstatedir}/lib/amavis
+%dir %attr(770,amavis,amavis) %{_localstatedir}/lib/amavis/tmp
+%dir %attr(770,amavis,amavis) %{_localstatedir}/lib/amavis/db
+%dir %attr(770,amavis,amavis) %{_localstatedir}/lib/amavis/quarantine
+%dir %attr(770,amavis,amavis) %{_localstatedir}/lib/amavis/var
 %{_tmpfilesdir}/amavisd-new.conf
 %dir %attr(755,amavis,amavis) %{_localstatedir}/run/amavisd
-%dir %attr(770,amavis,clamupdate) %{_localstatedir}/run/clamd.amavisd
 
 %files snmp
 %defattr(-,root,root,-)

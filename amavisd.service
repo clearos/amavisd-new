@@ -10,11 +10,10 @@ Type=forking
 User=amavis
 Group=amavis
 PIDFile=/var/run/amavisd/amavisd.pid
-ExecStart=/usr/sbin/amavisd -c /etc/amavisd/amavisd.conf
-ExecReload=/usr/sbin/amavisd -c /etc/amavisd/amavisd.conf reload
+ExecStart=/usr/sbin/amavisd -c /etc/amavisd.conf
+ExecReload=/usr/sbin/amavisd -c /etc/amavisd.conf reload
 Restart=on-failure
 PrivateTmp=true
-PrivateDevices=true
 NoNewPrivileges=true
 
 [Install]
