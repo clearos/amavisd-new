@@ -200,6 +200,7 @@ install -D -p -m 644 %{SOURCE14} $RPM_BUILD_ROOT%{_unitdir}/amavisd-clean-quaran
 install -D -p -m 644 %{SOURCE15} $RPM_BUILD_ROOT%{_unitdir}/amavis-mc.service
 install -D -p -m 644 %{SOURCE16} $RPM_BUILD_ROOT%{_unitdir}/amavisd-snmp-zmq.service
 
+mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/amavisd
 install -D -p -m 644 %{SOURCE1} $RPM_BUILD_ROOT%{_sysconfdir}/amavisd.conf
 
 mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/lib/amavis/{tmp,db,quarantine,var}
