@@ -3,7 +3,7 @@
 Summary:        Email filter with virus scanner and spamassassin support
 Name:           amavisd-new
 Version:        2.10.1
-Release:        1%{?prerelease:.%{prerelease}}%{?dist}
+Release:        4%{?prerelease:.%{prerelease}}%{?dist}
 # LDAP schema is GFDL, some helpers are BSD, core is GPLv2+
 License:        GPLv2+ and BSD and GFDL
 Group:          Applications/System
@@ -22,7 +22,7 @@ Source13:       amavisd-clean-quarantine.service
 Source14:       amavisd-clean-quarantine.timer
 Source15:       amavis-mc.service
 Source16:       amavisd-snmp-zmq.service
-Patch0:         amavisd-new-2.10.0-conf.patch
+Patch0:         amavisd-new-2.10.1-conf.patch
 Patch1:         amavisd-init.patch
 Patch2:         amavisd-condrestart.patch
 # Don't source /etc/sysconfig/network in init script; the network check
@@ -39,7 +39,7 @@ Requires:       altermime
 Requires:       arj
 Requires:       bzip2
 Requires:       cabextract
-Requires:       cpio
+Requires:       pax
 Requires:       file
 Requires:       freeze
 Requires:       gzip
@@ -64,7 +64,9 @@ Requires:       perl(DBI)
 Requires:       perl(Digest::MD5) >= 2.22
 Requires:       perl(Digest::SHA)
 Requires:       perl(Digest::SHA1)
+%if 0%{?rhel} != 7
 Requires:       perl(File::LibMagic)
+%endif
 Requires:       perl(IO::Socket::IP)
 Requires:       perl(IO::Socket::INET6)
 Requires:       perl(IO::Socket::SSL)
@@ -270,8 +272,9 @@ systemctl start amavisd-clean-quarantine.timer >/dev/null 2>&1 || :
 
 %files
 %defattr(-,root,root,-)
-%doc AAAREADME.first LDAP.schema LDAP.ldif LICENSE RELEASE_NOTES TODO INSTALL
+%doc AAAREADME.first LDAP.schema LDAP.ldif RELEASE_NOTES TODO INSTALL
 %doc README_FILES test-messages amavisd.conf-* amavisd-custom.conf
+%license LICENSE
 %dir %{_sysconfdir}/amavisd/
 %{_unitdir}/amavisd.service
 %{_unitdir}/amavisd-clean-tmp.service
@@ -310,6 +313,15 @@ systemctl start amavisd-clean-quarantine.timer >/dev/null 2>&1 || :
 %{_sbindir}/amavisd-snmp-subagent-zmq
 
 %changelog
+* Mon Apr 27 2015 Juan Orti Alcaine <jorti@fedoraproject.org> 2.10.1-4
+- Move amavisd socket to /var/run/amavisd
+
+* Thu Apr 09 2015 Juan Orti Alcaine <jorti@fedoraproject.org> 2.10.1-3
+- Use license macro
+
+* Thu Feb 26 2015 Robert Scheck <robert@fedoraproject.org> 2.10.1-2
+- Replaced requirement to cpio by pax (upstream recommendation)
+
 * Mon Oct 27 2014 Juan Orti Alcaine <jorti@fedoraproject.org> 2.10.1-1
 - Update to 2.10.1
 - Patch5 merged upstream

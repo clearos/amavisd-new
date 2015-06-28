@@ -1,8 +1,8 @@
-commit 45e7e93efb71dfe3d1f1ca93636c592e17689b09
+commit f866c3623452349bfb6e7c505e44b4ed0f444c54
 Author: Juan Orti Alcaine <juan.orti@miceliux.com>
-Date:   Sat Oct 25 22:48:40 2014 +0200
+Date:   Mon Apr 27 12:37:24 2015 +0200
 
-    Fix running user in amavis-mc and amavisd-signer
+    amavisd-new-2.10.1-conf.patch
 
 diff --git a/amavis-mc b/amavis-mc
 index 88d9701..f6f8081 100755
@@ -22,28 +22,6 @@ index 88d9701..f6f8081 100755
  
  $log_level = 0;
  $syslog_ident = 'amavis-mc';
-diff --git a/amavisd-signer b/amavisd-signer
-index f154646..3042b7c 100755
---- a/amavisd-signer
-+++ b/amavisd-signer
-@@ -86,8 +86,8 @@ $VERSION = 1.001;  # 20100730
- # Please adjust the following settings as necessary:
- #
- 
--$daemon_user  = 'vscan';
--$daemon_group = 'vscan';
-+$daemon_user  = 'amavis';
-+$daemon_group = 'amavis';
- # $daemon_chroot_dir = '/var/amavis';   # chroot directory or undef
- 
- # $daemonize = 1;
-
-commit 587b25f96031ab8ef4d8eab78065c2fa2a469df9
-Author: Juan Orti Alcaine <juan.orti@miceliux.com>
-Date:   Sat Oct 25 22:44:00 2014 +0200
-
-    amavisd-new-2.10.0-conf.patch
-
 diff --git a/amavisd-agent b/amavisd-agent
 index 1ebe2bb..b8271a3 100755
 --- a/amavisd-agent
@@ -70,8 +48,23 @@ index 80b84dc..164549f 100755
  my($wakeuptime) = 2;  # -w, sleep time in seconds, may be fractional
  my($repeatcount);     # -c, repeat count (when defined)
  
+diff --git a/amavisd-signer b/amavisd-signer
+index f154646..3042b7c 100755
+--- a/amavisd-signer
++++ b/amavisd-signer
+@@ -86,8 +86,8 @@ $VERSION = 1.001;  # 20100730
+ # Please adjust the following settings as necessary:
+ #
+ 
+-$daemon_user  = 'vscan';
+-$daemon_group = 'vscan';
++$daemon_user  = 'amavis';
++$daemon_group = 'amavis';
+ # $daemon_chroot_dir = '/var/amavis';   # chroot directory or undef
+ 
+ # $daemonize = 1;
 diff --git a/amavisd.conf b/amavisd.conf
-index d023e10..eecd17d 100644
+index d023e10..2ce88ff 100644
 --- a/amavisd.conf
 +++ b/amavisd.conf
 @@ -14,25 +14,25 @@ use strict;
@@ -107,6 +100,15 @@ index d023e10..eecd17d 100644
  #NOTE: create directories $MYHOME/tmp, $MYHOME/var, $MYHOME/db manually
  
  $log_level = 0;              # verbosity 0..5, -d
+@@ -52,7 +52,7 @@ $enable_dkim_signing = 1;    # load DKIM signing code, keys defined by dkim_key
+ @mynetworks = qw( 127.0.0.0/8 [::1] [FE80::]/10 [FEC0::]/10
+                   10.0.0.0/8 172.16.0.0/12 192.168.0.0/16 );
+ 
+-$unix_socketname = "$MYHOME/amavisd.sock";  # amavisd-release or amavis-milter
++$unix_socketname = "/var/run/amavisd/amavisd.sock";  # amavisd-release or amavis-milter
+                # option(s) -p overrides $inet_socket_port and $unix_socketname
+ 
+ $inet_socket_port = 10024;   # listen on this local TCP port(s)
 @@ -116,11 +116,11 @@ $sa_local_tests_only = 0;    # only tests which do not require internet access?
  # $timestamp_fmt_mysql = 1; # if using MySQL *and* msgs.time_iso is TIMESTAMP;
  #   defaults to 0, which is good for non-MySQL or if msgs.time_iso is CHAR(16)
