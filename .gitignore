@@ -5,3 +5,5 @@ amavisd-new-2.8.0.tar.gz
 /amavisd-new-2.10.0-rc2.tar.xz
 /amavisd-new-2.10.0.tar.xz
 /amavisd-new-2.10.1.tar.xz
+/Makefile
+*.src.rpm
