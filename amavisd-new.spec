@@ -112,7 +112,6 @@ which could cause a mail loss.
 %patch2 -p0
 %patch3 -p1
 
-install -p -m 644 %{SOURCE4} %{SOURCE5} README_FILES/
 sed -e 's,/var/amavis/amavisd.sock\>,%{_localstatedir}/lib/amavis/amavisd.sock,' -i amavisd-release
 
 %build
