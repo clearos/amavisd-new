@@ -15,13 +15,10 @@ Source4:        README.fedora
 Source5:        README.quarantine
 Source8:        amavisd-new-tmpfiles.conf
 Source9:        amavisd.service
-Source10:       amavisd-snmp.service
 Source11:       amavisd-clean-tmp.service
 Source12:       amavisd-clean-tmp.timer
 Source13:       amavisd-clean-quarantine.service
 Source14:       amavisd-clean-quarantine.timer
-Source15:       amavis-mc.service
-Source16:       amavisd-snmp-zmq.service
 Patch0:         amavisd-new-2.10.1-conf.patch
 Patch1:         amavisd-init.patch
 Patch2:         amavisd-condrestart.patch
@@ -103,34 +100,6 @@ Requires(post): systemd
 Requires(preun): systemd
 Requires(postun): systemd
 
-%package snmp
-Group:          Applications/System
-Summary:        Exports amavisd SNMP data
-Requires:       %{name} = %{version}-%{release}
-Requires:       perl(NetSNMP::OID)
-Requires(post): systemd
-Requires(preun): systemd
-Requires(postun): systemd
-
-%package zeromq
-Group:          Applications/System
-Summary:        Support for communicating through 0MQ sockets
-Requires:       %{name} = %{version}-%{release}
-Requires:       perl(ZMQ::Constants)
-Requires:       perl(ZMQ::LibZMQ3)
-Requires(post): systemd
-Requires(preun): systemd
-Requires(postun): systemd
-
-%package snmp-zeromq
-Group:          Applications/System
-Summary:        Exports amavisd SNMP data and communicates through 0MQ sockets
-Requires:       %{name}-zeromq = %{version}-%{release}
-Requires:       perl(NetSNMP::OID)
-Requires(post): systemd
-Requires(preun): systemd
-Requires(postun): systemd
-
 %description
 amavisd-new is a high-performance and reliable interface between mailer
 (MTA) and one or more content checkers: virus scanners, and/or
@@ -138,34 +107,6 @@ Mail::SpamAssassin Perl module. It is written in Perl, assuring high
 reliability, portability and maintainability. It talks to MTA via (E)SMTP
 or LMTP, or by using helper programs. No timing gaps exist in the design
 which could cause a mail loss.
-
-%description snmp
-This package contains the program amavisd-snmp-subagent, which can be
-used as a SNMP AgentX, exporting amavisd statistical counters database
-(snmp.db) as well as a child process status database (nanny.db) to a
-SNMP daemon supporting the AgentX protocol (RFC 2741), such as NET-SNMP.
-
-It is similar to combined existing utility programs amavisd-agent and
-amavisd-nanny, but instead of writing results as text to stdout, it
-exports data to a SNMP server running on a host (same or remote), making
-them available to SNMP clients (such a Cacti or mrtg) for monitoring or
-alerting purposes.
-
-%description zeromq
-This package adds support for monitoring and communicating with amavisd
-and auxiliary services among themselves through 0MQ sockets (also called ZMQ
-or ZeroMQ, or Crossroads I/O or XS). This method offers similar features
-as current services amavisd-nanny, amavisd-agent and amavisd-snmp-subagent,
-but use message passing paradigm instead of communicating through a shared
-Berkeley database. This avoids locking contention, so the gain can be
-significant for a busy amavisd setup with lots of child processes.
-
-%description snmp-zeromq
-This package contains the program amavisd-snmp-subagent-zmq, which can be
-used as a SNMP AgentX, exporting amavisd statistical counters database
-(snmp.db) as well as a child process status database (nanny.db) to a
-SNMP daemon supporting the AgentX protocol (RFC 2741), such as NET-SNMP.
-It supports communicating through 0MQ sockets.
 
 %prep
 %setup -q -n %{name}-%{version}%{?prerelease:-%{prerelease}}
@@ -183,22 +124,15 @@ sed -e 's,/var/amavis/amavisd.sock\>,%{_localstatedir}/lib/amavis/amavisd.sock,'
 rm -rf $RPM_BUILD_ROOT
 
 install -D -p -m 755 amavisd $RPM_BUILD_ROOT%{_sbindir}/amavisd
-install -D -p -m 755 amavisd-snmp-subagent $RPM_BUILD_ROOT%{_sbindir}/amavisd-snmp-subagent
-install -D -p -m 755 amavisd-snmp-subagent-zmq $RPM_BUILD_ROOT%{_sbindir}/amavisd-snmp-subagent-zmq
 
 mkdir -p $RPM_BUILD_ROOT%{_bindir}
-install -p -m 755 amavisd-{agent,nanny,release,signer,status,submit} $RPM_BUILD_ROOT%{_bindir}/
-install -p -m 755 amavis-mc $RPM_BUILD_ROOT%{_sbindir}/
-install -p -m 755 amavis-services $RPM_BUILD_ROOT%{_bindir}/
+install -p -m 755 amavisd-{agent,nanny,release,signer,submit} $RPM_BUILD_ROOT%{_bindir}/
 
 install -D -p -m 644 %{SOURCE9} $RPM_BUILD_ROOT%{_unitdir}/amavisd.service
-install -D -p -m 644 %{SOURCE10} $RPM_BUILD_ROOT%{_unitdir}/amavisd-snmp.service
 install -D -p -m 644 %{SOURCE11} $RPM_BUILD_ROOT%{_unitdir}/amavisd-clean-tmp.service
 install -D -p -m 644 %{SOURCE12} $RPM_BUILD_ROOT%{_unitdir}/amavisd-clean-tmp.timer
 install -D -p -m 644 %{SOURCE13} $RPM_BUILD_ROOT%{_unitdir}/amavisd-clean-quarantine.service
 install -D -p -m 644 %{SOURCE14} $RPM_BUILD_ROOT%{_unitdir}/amavisd-clean-quarantine.timer
-install -D -p -m 644 %{SOURCE15} $RPM_BUILD_ROOT%{_unitdir}/amavis-mc.service
-install -D -p -m 644 %{SOURCE16} $RPM_BUILD_ROOT%{_unitdir}/amavisd-snmp-zmq.service
 
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/amavisd
 install -D -p -m 644 %{SOURCE1} $RPM_BUILD_ROOT%{_sysconfdir}/amavisd.conf
@@ -225,15 +159,6 @@ exit 0
 %systemd_preun amavisd-clean-quarantine.service
 %systemd_preun amavisd-clean-quarantine.timer
 
-%preun snmp
-%systemd_preun amavisd-snmp.service
-
-%preun zeromq
-%systemd_preun amavis-mc.service
-
-%preun snmp-zeromq
-%systemd_preun amavisd-snmp-zmq.service
-
 %post
 %systemd_post amavisd.service
 %systemd_post amavisd-clean-tmp.service
@@ -246,30 +171,12 @@ systemctl start amavisd-clean-tmp.timer >/dev/null 2>&1 || :
 systemctl enable amavisd-clean-quarantine.timer >/dev/null 2>&1 || :
 systemctl start amavisd-clean-quarantine.timer >/dev/null 2>&1 || :
 
-%post snmp
-%systemd_post amavisd-snmp.service
-
-%post zeromq
-%systemd_post amavis-mc.service
-
-%post snmp-zeromq
-%systemd_post amavisd-snmp-zmq.service
-
 %postun
 %systemd_postun_with_restart amavisd.service
 %systemd_postun_with_restart amavisd-clean-tmp.service
 %systemd_postun_with_restart amavisd-clean-tmp.timer
 %systemd_postun_with_restart amavisd-clean-quarantine.service
 %systemd_postun_with_restart amavisd-clean-quarantine.timer
-
-%postun snmp
-%systemd_postun_with_restart amavisd-snmp.service
-
-%postun zeromq
-%systemd_postun_with_restart amavis-mc.service
-
-%postun snmp-zeromq
-%systemd_postun_with_restart amavisd-snmp-zmq.service
 
 %files
 %defattr(-,root,root,-)
@@ -296,22 +203,6 @@ systemctl start amavisd-clean-quarantine.timer >/dev/null 2>&1 || :
 %dir %attr(770,amavis,amavis) %{_localstatedir}/lib/amavis/var
 %{_tmpfilesdir}/amavisd-new.conf
 %dir %attr(755,amavis,amavis) %{_localstatedir}/run/amavisd
-
-%files snmp
-%defattr(-,root,root,-)
-%doc AMAVIS-MIB.txt
-%{_unitdir}/amavisd-snmp.service
-%{_sbindir}/amavisd-snmp-subagent
-
-%files zeromq
-%{_unitdir}/amavis-mc.service
-%{_sbindir}/amavis-mc
-%{_bindir}/amavisd-status
-%{_bindir}/amavis-services
-
-%files snmp-zeromq
-%{_unitdir}/amavisd-snmp-zmq.service
-%{_sbindir}/amavisd-snmp-subagent-zmq
 
 %changelog
 * Mon Apr 27 2015 Juan Orti Alcaine <jorti@fedoraproject.org> 2.10.1-4
