@@ -10,7 +10,6 @@ Group:          Applications/System
 URL:            http://www.ijs.si/software/amavisd/
 Source0:        http://www.ijs.si/software/amavisd/amavisd-new-%{version}%{?prerelease:-%{prerelease}}.tar.xz
 Source1:        amavisd.conf
-Source2:        amavis-clamd.conf
 Source4:        README.fedora
 Source5:        README.quarantine
 Source8:        amavisd-new-tmpfiles.conf
