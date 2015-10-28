@@ -3,7 +3,7 @@
 Summary:        Email filter with virus scanner and spamassassin support
 Name:           amavisd-new
 Version:        2.10.1
-Release:        4%{?prerelease:.%{prerelease}}%{?dist}.1
+Release:        4%{?prerelease:.%{prerelease}}%{?dist}.2
 # LDAP schema is GFDL, some helpers are BSD, core is GPLv2+
 License:        GPLv2+ and BSD and GFDL
 Group:          Applications/System
@@ -201,6 +201,9 @@ systemctl start amavisd-clean-quarantine.timer >/dev/null 2>&1 || :
 %dir %attr(755,amavis,amavis) %{_localstatedir}/run/amavisd
 
 %changelog
+* Wed Oct 28 2015 ClearFoundation <developer@clearfoundation.com> 2.10.1-4.2
+- Removed unwanted ClamAV systemd hook
+
 * Tue Jul 14 2015 ClearFoundation <developer@clearfoundation.com> 2.10.1-4.1
 - Tuned for ClearOS
 
