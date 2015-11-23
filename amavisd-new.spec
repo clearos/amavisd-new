@@ -3,7 +3,7 @@
 Summary:        Email filter with virus scanner and spamassassin support
 Name:           amavisd-new
 Version:        2.10.1
-Release:        4%{?prerelease:.%{prerelease}}%{?dist}
+Release:        5%{?prerelease:.%{prerelease}}%{?dist}
 # LDAP schema is GFDL, some helpers are BSD, core is GPLv2+
 License:        GPLv2+ and BSD and GFDL
 Group:          Applications/System
@@ -32,8 +32,6 @@ Patch3:         amavisd-new-2.8.0-init_network.patch
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:      noarch
 BuildRequires:  systemd
-Requires:       clamav-server
-Requires:       clamav-server-systemd
 Requires:       tmpwatch
 Requires:       binutils
 Requires:       altermime
@@ -200,6 +198,7 @@ install -D -p -m 644 %{SOURCE14} $RPM_BUILD_ROOT%{_unitdir}/amavisd-clean-quaran
 install -D -p -m 644 %{SOURCE15} $RPM_BUILD_ROOT%{_unitdir}/amavis-mc.service
 install -D -p -m 644 %{SOURCE16} $RPM_BUILD_ROOT%{_unitdir}/amavisd-snmp-zmq.service
 
+mkdir -p -m 0755 $RPM_BUILD_ROOT%{_sysconfdir}/clamd.d
 install -D -p -m 644 amavisd.conf $RPM_BUILD_ROOT%{_sysconfdir}/amavisd/amavisd.conf
 install -D -p -m 644 %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/clamd.d/amavisd.conf
 
@@ -282,6 +281,7 @@ systemctl start amavisd-clean-quarantine.timer >/dev/null 2>&1 || :
 %{_unitdir}/amavisd-clean-tmp.timer
 %{_unitdir}/amavisd-clean-quarantine.service
 %{_unitdir}/amavisd-clean-quarantine.timer
+%dir %{_sysconfdir}/clamd.d
 %config(noreplace) %{_sysconfdir}/amavisd/amavisd.conf
 %config(noreplace) %{_sysconfdir}/clamd.d/amavisd.conf
 %{_sbindir}/amavisd
@@ -315,6 +315,9 @@ systemctl start amavisd-clean-quarantine.timer >/dev/null 2>&1 || :
 %{_sbindir}/amavisd-snmp-subagent-zmq
 
 %changelog
+* Mon Nov 23 2015 Juan Orti Alcaine <jorti@fedoraproject.org> 2.10.1-5
+- Drop clamav dependency and co-own /etc/clamd.d (RHBZ#1265922)
+
 * Mon Apr 27 2015 Juan Orti Alcaine <jorti@fedoraproject.org> 2.10.1-4
 - Move amavisd socket to /var/run/amavisd
 
