@@ -271,7 +271,6 @@ systemctl start amavisd-clean-quarantine.timer >/dev/null 2>&1 || :
 %systemd_postun_with_restart amavisd-snmp-zmq.service
 
 %files
-%defattr(-,root,root,-)
 %doc AAAREADME.first LDAP.schema LDAP.ldif RELEASE_NOTES TODO INSTALL
 %doc README_FILES test-messages amavisd.conf-* amavisd-custom.conf
 %license LICENSE
@@ -299,7 +298,6 @@ systemctl start amavisd-clean-quarantine.timer >/dev/null 2>&1 || :
 %dir %attr(770,amavis,clamupdate) %{_localstatedir}/run/clamd.amavisd
 
 %files snmp
-%defattr(-,root,root,-)
 %doc AMAVIS-MIB.txt
 %{_unitdir}/amavisd-snmp.service
 %{_sbindir}/amavisd-snmp-subagent
