@@ -2,8 +2,8 @@
 
 Summary:        Email filter with virus scanner and spamassassin support
 Name:           amavisd-new
-Version:        2.10.1
-Release:        5%{?prerelease:.%{prerelease}}%{?dist}
+Version:        2.11.0
+Release:        1%{?prerelease:.%{prerelease}}%{?dist}
 # LDAP schema is GFDL, some helpers are BSD, core is GPLv2+
 License:        GPLv2+ and BSD and GFDL
 Group:          Applications/System
@@ -29,9 +29,12 @@ Patch2:         amavisd-condrestart.patch
 # and it can't be relied upon to exist in recent Fedora builds. Mail
 # sent upstream to amavis-users ML 2013-05-10. -adamw
 Patch3:         amavisd-new-2.8.0-init_network.patch
+# https://bugzilla.redhat.com/show_bug.cgi?id=1364730
+Patch4:         amavisd-new-2.11.0-detect_originating_email.patch
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:      noarch
 BuildRequires:  systemd
+BuildRequires:  perl-generators
 Requires:       tmpwatch
 Requires:       binutils
 Requires:       altermime
@@ -171,6 +174,7 @@ It supports communicating through 0MQ sockets.
 %patch1 -p1
 %patch2 -p0
 %patch3 -p1
+%patch4 -p0
 
 install -p -m 644 %{SOURCE4} %{SOURCE5} README_FILES/
 sed -e 's,/var/amavis/amavisd.sock\>,%{_localstatedir}/spool/amavisd/amavisd.sock,' -i amavisd-release
@@ -313,6 +317,9 @@ systemctl start amavisd-clean-quarantine.timer >/dev/null 2>&1 || :
 %{_sbindir}/amavisd-snmp-subagent-zmq
 
 %changelog
+* Wed Apr 19 2017 Juan Orti Alcaine <jorti@fedoraproject.org> 2.11.0-1
+- Version 2.11.0
+
 * Mon Nov 23 2015 Juan Orti Alcaine <jorti@fedoraproject.org> 2.10.1-5
 - Drop clamav dependency and co-own /etc/clamd.d (RHBZ#1265922)
 

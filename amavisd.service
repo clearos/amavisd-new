@@ -14,7 +14,10 @@ ExecStart=/usr/sbin/amavisd -c /etc/amavisd/amavisd.conf
 ExecReload=/usr/sbin/amavisd -c /etc/amavisd/amavisd.conf reload
 Restart=on-failure
 PrivateTmp=true
-NoNewPrivileges=true
+PrivateDevices=true
+CapabilityBoundingSet=
+ProtectSystem=full
+ProtectHome=true
 
 [Install]
 WantedBy=multi-user.target
