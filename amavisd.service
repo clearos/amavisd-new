@@ -1,7 +1,7 @@
 [Unit]
 Description=Amavisd-new is an interface between MTA and content checkers.
 Documentation=http://www.ijs.si/software/amavisd/#doc
-After=network.target
+After=network-online.target
 Wants=postfix.service
 
 [Service]
